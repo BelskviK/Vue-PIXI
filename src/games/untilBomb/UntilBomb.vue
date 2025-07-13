@@ -45,14 +45,66 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount, CSSProperties } from "vue";
 import { Application, Container, Graphics, Text, BlurFilter } from "pixi.js";
 import GameHeader from "../../components/GameHeader.vue";
 
+// --- Custom Card Class ---
+class CardGraphics extends Graphics {
+  index: number;
+  isFlipped: boolean;
+  label: Text;
+
+  constructor(
+    index: number,
+    x: number,
+    y: number,
+    size: number,
+    onFlip: (card: CardGraphics) => void
+  ) {
+    super();
+    this.index = index;
+    this.isFlipped = false;
+    this.x = x;
+    this.y = y;
+    this.interactive = true;
+    this.cursor = "pointer";
+    this.label = new Text("?", {
+      fontFamily: "Arial",
+      fontSize: 32,
+      fill: 0xffffff,
+      align: "center",
+    });
+    this.label.anchor.set(0.5);
+    this.label.x = size / 2;
+    this.label.y = size / 2;
+    this.beginFill(0x2196f3);
+    this.drawRoundedRect(0, 0, size, size, 10);
+    this.endFill();
+    this.addChild(this.label);
+    this.on("pointertap", () => onFlip(this));
+  }
+}
+
+type ParticlesType = Array<{
+  x: number;
+  y: number;
+  size: number;
+  speedX: number;
+  speedY: number;
+  color: string;
+  alpha: number;
+  decay: number;
+}> & {
+  canvas?: HTMLCanvasElement;
+  ctx?: CanvasRenderingContext2D | null;
+  animating?: boolean;
+};
+
 const pixiContainer = ref<HTMLDivElement | null>(null);
 let app: Application | null = null;
-let board: any = null;
-let particles: any = null;
+let board: Container | null = null;
+let particles = [] as ParticlesType;
 
 const gridSize = 5;
 const spacing = 10;
@@ -64,10 +116,10 @@ const multiplier = ref(1);
 const flippedCount = ref(0);
 const gameStarted = ref(false);
 const resultMessage = ref("");
-const resultStyle = ref({});
+const resultStyle = ref<CSSProperties>({});
 
 let bombIndex = -1;
-let cards: any[] = [];
+let cards: CardGraphics[] = [];
 
 function showResultMessage(message: string, color: string) {
   resultMessage.value = message;
@@ -78,10 +130,16 @@ function showResultMessage(message: string, color: string) {
     opacity: "1",
     zIndex: "1000",
     pointerEvents: "none",
+    left: "50%",
+    top: "50%",
+    position: "fixed",
   };
   setTimeout(() => {
-    resultStyle.value.opacity = "0";
-    resultStyle.value.transform = "translate(-50%, -50%) scale(0.8)";
+    resultStyle.value = {
+      ...resultStyle.value,
+      opacity: "0",
+      transform: "translate(-50%, -50%) scale(0.8)",
+    };
     setTimeout(() => {
       resultMessage.value = "";
     }, 500);
@@ -89,7 +147,7 @@ function showResultMessage(message: string, color: string) {
 }
 
 function createParticles(x: number, y: number, color: string, count = 30) {
-  if (!particles) return;
+  if (!particles || !particles.ctx || !particles.canvas) return;
   for (let i = 0; i < count; i++) {
     particles.push({
       x,
@@ -157,28 +215,8 @@ function resetBoard(app: Application, blurred = false) {
     const col = i % gridSize;
     const x = startX + col * (cardSize + spacing);
     const y = startY + row * (cardSize + spacing);
-    const card = new Graphics();
-    card.beginFill(0x2196f3);
-    card.drawRoundedRect(0, 0, cardSize, cardSize, 10);
-    card.endFill();
-    card.x = x;
-    card.y = y;
-    card.interactive = true;
-    card.cursor = "pointer";
-    card.index = i;
-    card.isFlipped = false;
-    card.label = new Text("?", {
-      fontFamily: "Arial",
-      fontSize: 32,
-      fill: 0xffffff,
-      align: "center",
-    });
-    card.label.anchor.set(0.5);
-    card.label.x = cardSize / 2;
-    card.label.y = cardSize / 2;
-    card.addChild(card.label);
-    card.on("pointertap", () => flipCard(card));
-    board.addChild(card);
+    const card = new CardGraphics(i, x, y, cardSize, flipCard);
+    board.addChild(card); // No type error: CardGraphics extends Graphics
     cards.push(card);
   }
   if (blurred) {
@@ -192,7 +230,7 @@ function resetBoard(app: Application, blurred = false) {
   }
 }
 
-function flipCard(card: any) {
+function flipCard(card: CardGraphics) {
   if (card.isFlipped || !gameStarted.value) return;
   card.isFlipped = true;
   card.interactive = false;
@@ -203,7 +241,6 @@ function flipCard(card: any) {
     flippedCount.value++;
     multiplier.value += 0.25;
     revealSafe(card, multiplier.value);
-    // Particle effect
     createParticles(card.x + cardSize / 2, card.y + cardSize / 2, "#4CAF50");
     if (flippedCount.value === gridSize ** 2 - 1) {
       endGame(true);
@@ -211,21 +248,21 @@ function flipCard(card: any) {
   }
 }
 
-function revealBomb(card: any) {
+function revealBomb(card: CardGraphics) {
   card.label.text = "💣";
   card.label.style.fill = 0xff0000;
   card.tint = 0xff5252;
   shake(card);
 }
 
-function revealSafe(card: any, mult: number) {
+function revealSafe(card: CardGraphics, mult: number) {
   card.label.text = `${mult.toFixed(2)}x`;
   card.label.style.fill = 0xffffff;
   card.tint = 0x4caf50;
   pulse(card);
 }
 
-function shake(card: any) {
+function shake(card: CardGraphics) {
   const startTime = Date.now();
   const duration = 500;
   const origX = card.x,
@@ -246,7 +283,7 @@ function shake(card: any) {
   animate();
 }
 
-function pulse(card: any) {
+function pulse(card: CardGraphics) {
   const startScale = card.scale.x;
   const targetScale = 1.2;
   const duration = 300;
@@ -282,7 +319,6 @@ function endGame(won: boolean) {
   if (won) {
     const winnings = Math.floor(bet.value * multiplier.value);
     balance.value += winnings;
-    // Celebration particles
     for (let i = 0; i < 100; i++) {
       const x = Math.random() * app!.screen.width;
       const y = Math.random() * app!.screen.height;
@@ -290,7 +326,6 @@ function endGame(won: boolean) {
     }
     showResultMessage("🎉 You Win!", "#4CAF50");
   } else {
-    // Explosion particles
     const bombCard = cards[bombIndex];
     createParticles(
       bombCard.x + cardSize / 2,
@@ -314,8 +349,7 @@ onMounted(async () => {
   await app.init();
   pixiContainer.value.appendChild(app.canvas);
 
-  // Particle canvas
-  particles = [];
+  particles = [] as ParticlesType;
   particles.canvas = document.createElement("canvas");
   particles.ctx = particles.canvas.getContext("2d");
   particles.canvas.style.position = "absolute";
@@ -326,8 +360,10 @@ onMounted(async () => {
   pixiContainer.value.appendChild(particles.canvas);
 
   function resizeParticles() {
-    particles.canvas.width = pixiContainer.value!.offsetWidth;
-    particles.canvas.height = pixiContainer.value!.offsetHeight;
+    if (particles.canvas && pixiContainer.value) {
+      particles.canvas.width = pixiContainer.value.offsetWidth;
+      particles.canvas.height = pixiContainer.value.offsetHeight;
+    }
   }
   resizeParticles();
   window.addEventListener("resize", resizeParticles);
