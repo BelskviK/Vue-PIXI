@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-[calc(100vh-64px)] bg-gray-900">
-    <GameHeader :title="'Until Guess'" />
+    <GameHeader :title="'Until Bomb'" />
     <div ref="pixiContainer" class="w-full h-full"></div>
   </div>
 </template>

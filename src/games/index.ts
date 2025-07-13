@@ -1,5 +1,5 @@
 // src/games/index.ts
-import untilGuess from "./untilGuess/game";
+import untilBomb from "./untilBomb/game";
 import guessNumber from "./guessNumber/game";
 
 export interface Game {
@@ -11,6 +11,6 @@ export interface Game {
 }
 
 export const gameRegistry: Record<string, Game> = {
-  [untilGuess.id]: untilGuess,
+  [untilBomb.id]: untilBomb,
   [guessNumber.id]: guessNumber,
 };
