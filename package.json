@@ -11,6 +11,7 @@
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
     "@types/pixi.js": "^8.0.2",
+    "canvas-confetti": "^1.9.3",
     "pinia": "^3.0.3",
     "pixi.js": "^8.11.0",
     "vue": "^3.5.13",
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.10",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/pixi.js": "^4.8.9",
     "@vitejs/plugin-vue": "^5.2.4",
     "@volar/vue-language-plugin-pug": "^1.6.5",
