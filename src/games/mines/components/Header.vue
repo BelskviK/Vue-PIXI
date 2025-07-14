@@ -1,49 +1,45 @@
-<!-- src/games/mines/components/Header.vue -->
 <template>
   <div
-    class="relative w-full h-9 bg-gradient-to-r from-[#055a8e] to-[#00329a] flex items-center justify-between px-4 shadow-md rounded-xl text-white py-4"
+    class="relative w-full h-9 bg-gradient-to-r from-[#055a8e] to-[#00329a] flex items-center px-4 shadow-md rounded-2xl text-white py-4"
   >
-    <!-- Left: game selector -->
-    <button
-      @click="toggleDropdown"
-      class="flex items-center justify-center w-[14%] h-7 rounded-3xl shadow border-[1px] border-black bg-[#0267a5] hover:bg-[#015d94] text-white text-sm px-1 -ml-3 py-[1px]"
-    >
-      <span class="flex-1 text-center font-normal">MINES</span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="w-4 h-4 mr-2"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
+    <div class="flex items-center w-[50%] space-x-7">
+      <!-- Left: game selector -->
+      <button
+        @click="toggleDropdown"
+        class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow border-[1px] border-black bg-[#0267a5] hover:bg-[#015d94] text-white text-sm px-1 mx-2 -ml-3 py-[1px] transition-transform duration-100 active:translate-y-1 active:shadow-inner"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
-
-    <!-- Dropdown menu -->
-    <div
-      v-if="open"
-      class="absolute top-full left-1 grid grid-cols-4 gap-x-2 gap-y-4 bg-[#212226] border border-black rounded-lg shadow-lg p-4 z-20"
-    >
-      <a
-        v-for="(game, idx) in gameIcons"
-        :key="idx"
-        :href="game.href"
-        class="flex flex-col items-center hover:opacity-80"
+        <span class="flex-1 text-center font-normal">MINES</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4 mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+      <button
+        @click="openHowToPlayModal"
+        class="flex items-center justify-left w-[30%] h-7 rounded-3xl shadow bg-[#f89a17] text-black text-sm px-1 mx-2 -ml-3 py-[1px] transition-transform duration-100 active:translate-y-1 active:shadow-inner"
       >
-        <img :src="game.src" :alt="game.name" class="w-11 h-11 mb-1" />
-        <p class="text-sm opacity-70 font-extralight">{{ game.name }}</p>
-      </a>
+        <img :src="howTo" alt="" class="w-5 h-5 filter brightness-0" />
+        <span class="flex-1 text-center truncate">How To Play ?</span>
+      </button>
     </div>
-
     <!-- Right: balance + menu -->
-    <div class="flex items-center space-x-3">
-      <p class="font-mono text-sm">1,351,651,651 USD</p>
+    <div class="flex justify-end items-center w-[50%] space-x-2">
+      <p class="font-mono text-sm">
+        {{ balance.toLocaleString() }}
+      </p>
+
+      <p class="opacity-50">USD</p>
+
       <button
         class="p-1 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full"
         aria-label="Open menu"
@@ -64,11 +60,28 @@
         </svg>
       </button>
     </div>
+    <!-- Dropdown menu -->
+    <div
+      v-if="dropdownOpen"
+      class="absolute top-full left-1 grid grid-cols-4 gap-x-2 gap-y-4 bg-[#212226] border border-black rounded-lg shadow-lg p-4 z-20"
+    >
+      <a
+        v-for="(game, idx) in gameIcons"
+        :key="idx"
+        :href="game.href"
+        class="flex flex-col items-center hover:opacity-80"
+      >
+        <img :src="game.src" :alt="game.name" class="w-11 h-11 mb-1" />
+        <p class="text-sm opacity-70 font-extralight">{{ game.name }}</p>
+      </a>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useUserStore } from "@/stores/user";
+import { storeToRefs } from "pinia";
 
 // icons
 import iconBalloon from "../../../assets/gameIcons/icon-balloon.svg";
@@ -80,11 +93,20 @@ import iconKeno from "../../../assets/gameIcons/icon-keno.svg";
 import iconMines from "../../../assets/gameIcons/icon-mines.svg";
 import iconMiniRoulette from "../../../assets/gameIcons/icon-mini-roulette.svg";
 import iconPlinko from "../../../assets/gameIcons/icon-plinko.svg";
+import howTo from "../../../assets/icon-how-to-play.svg";
 
-const open = ref(false);
+const dropdownOpen = ref(false);
+const modalOpen = ref(false);
 function toggleDropdown() {
-  open.value = !open.value;
+  dropdownOpen.value = !dropdownOpen.value;
 }
+function openHowToPlayModal() {
+  modalOpen.value = !modalOpen.value;
+}
+
+// Pinia user store
+const userStore = useUserStore();
+const { balance } = storeToRefs(userStore);
 
 // list of game icons + links for dropdown
 const gameIcons = [
