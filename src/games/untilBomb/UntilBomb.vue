@@ -1,6 +1,5 @@
 <template>
   <div class="w-full h-[calc(100vh-64px)] bg-gray-900 relative">
-    <GameHeader :title="'Until Bomb'" />
     <div
       id="ui"
       class="absolute top-3 left-3 right-3 max-w-[480px] mx-auto z-10"
@@ -45,17 +44,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, CSSProperties } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, CSSProperties } from "vue";
 import { Application } from "pixi.js";
-import GameHeader from "../../components/GameHeader.vue";
 import { CardGraphics } from "./engine/CardGraphics";
 import { Board } from "./engine/Board";
 import { ParticleSystem } from "./engine/ParticleSystem";
+import { PixiGameHeader } from "@/components/pixi/PixiGameHeader";
 
 const pixiContainer = ref<HTMLDivElement | null>(null);
 let app: Application | null = null;
 let board: Board | null = null;
 let particles: ParticleSystem | null = null;
+let pixiHeader: PixiGameHeader | null = null;
 
 const gridSize = 5;
 const spacing = 10;
@@ -165,6 +165,20 @@ onMounted(async () => {
 
   board = new Board(app, gridSize, spacing, cardSize, flipCard);
   board.generate(true);
+
+  // Add Pixi header
+  pixiHeader = new PixiGameHeader(
+    "Until Bomb",
+    "Player1",
+    balance.value,
+    app.screen.width
+  );
+  app.stage.addChild(pixiHeader);
+
+  // Update balance when it changes
+  watch(balance, (newBalance) => {
+    pixiHeader?.updateBalance(newBalance);
+  });
 });
 
 onBeforeUnmount(() => {
