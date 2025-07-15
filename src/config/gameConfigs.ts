@@ -64,7 +64,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#FB9C23",
     },
     betsClasses: "bg-gradient-to-r from-yellow-400 to-yellow-500",
-    betsControlProps: { panelType: "mines", gridSize: 5 },
+    betsControlProps: { panelType: "mines", gridSize: 5, showControls: true },
   },
 
   goal: {
@@ -125,7 +125,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     theme: {
       bg: "#202020",
       btn: "#0676cf",
-      gradientFrom: "#10b981", // emerald
+      gradientFrom: "#10b981",
       gradientTo: "#059669",
       layoutgradientFrom: "#0d9488",
       layoutgradientTo: "#065f46",

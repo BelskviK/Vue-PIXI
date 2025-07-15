@@ -1,14 +1,24 @@
 <!-- src/components/BetControls.vue -->
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
+import { useDiceStore } from "@/games/dice/Store";
+import { usePlinkoStore } from "@/games/plinko/Store";
+import { useMinesStore } from "@/games/mines/Store";
+import { useGoalStore } from "@/games/goal/Store";
+import { useHiloStore } from "@/games/hilo/Store";
+import { useKenoStore } from "@/games/keno/Store";
+import { useMiniRouletteStore } from "@/games/mini-roulette/Store";
+import { useHotlineStore } from "@/games/hotline/Store";
+import { useBalloonStore } from "@/games/balloon/Store";
+
 import BetAuto from "@/components/BetAuto.vue";
 import BetButton from "@/components/BetButton.vue";
 import BetInput from "@/components/BetInput.vue";
 
-// Define props for external customization
+// Props from GameView
 const props = defineProps<{
   classes?: string;
-  panelType?: string;
+  panelType: string;
   maxBet?: number;
   gridSize?: number;
   theme: {
@@ -16,75 +26,91 @@ const props = defineProps<{
     layoutgradientTo: string;
     btn: string;
   };
+  showControls?: boolean;
 }>();
 
-// Emit events to parent
-const emit = defineEmits<{
-  (e: "update:bet", value: number): void;
-  (e: "toggle:auto", active: boolean): void;
-  (e: "place:bet"): void;
-}>();
+// Figure out which store to use by panelType
+const gameStores: Record<string, any> = {
+  dice: useDiceStore(),
+  plinko: usePlinkoStore(),
+  mines: useMinesStore(),
+  goal: useGoalStore(),
+  hilo: useHiloStore(),
+  keno: useKenoStore(),
+  miniRoulette: useMiniRouletteStore(),
+  hotline: useHotlineStore(),
+  balloon: useBalloonStore(),
+};
 
-// Local state
-const betValue = ref<number>(props.maxBet ? 0 : 0);
+const store = gameStores[props.panelType];
+
+// Local UI state
+const betValue = ref<number>(props.maxBet ?? 0);
 const isAuto = ref<boolean>(false);
 
-// Handlers
+// Handlers for input & auto
 function increase() {
   const step = 0.1;
   if (!props.maxBet || betValue.value + step <= props.maxBet) {
     betValue.value = parseFloat((betValue.value + step).toFixed(2));
   }
 }
-
 function decrease() {
   const step = 0.1;
   if (betValue.value - step >= 0) {
     betValue.value = parseFloat((betValue.value - step).toFixed(2));
   }
 }
-
 function toggleAuto() {
   isAuto.value = !isAuto.value;
-  emit("toggle:auto", isAuto.value);
+  // you could wire this into store if you want
 }
 
-function placeBet() {
+// Emit events up if you still need them
+const emit = defineEmits<{
+  (e: "update:bet", value: number): void;
+  (e: "toggle:auto", active: boolean): void;
+  (e: "place:bet"): void;
+}>();
+watch(betValue, (v) => emit("update:bet", v));
+
+// Derive button status from store
+const status = computed(() => store.status as string);
+
+// When BetButton clicked, call the store’s handler
+function onBetClick() {
+  store.handleClick();
   emit("place:bet");
 }
-
-// Watch and propagate bet value changes
-watch(betValue, (newVal) => {
-  emit("update:bet", newVal);
-});
 </script>
 
 <template>
   <div
+    v-if="showControls !== false"
     :class="[
-      props.classes,
+      classes,
       'w-full h-20 flex items-center justify-center shadow-inner rounded-xl',
     ]"
   >
     <div
       class="w-full h-20 flex items-center justify-center space-x-4 shadow-inner rounded-xl"
       :style="{
-        background: `linear-gradient(to right, ${props.theme.layoutgradientFrom}, ${props.theme.layoutgradientTo})`,
+        background: `linear-gradient(to right, ${theme.layoutgradientFrom}, ${theme.layoutgradientTo})`,
       }"
     >
       <BetInput
         :value="betValue"
         @increase="increase"
         @decrease="decrease"
-        :classes="props.theme.btn"
+        :classes="theme.btn"
       />
       <BetAuto :active="isAuto" @toggle="toggleAuto" />
-      <!-- BetButton now has a static green background -->
-      <BetButton status="" @bet="placeBet" />
+      <!-- now driven by each game’s store -->
+      <BetButton :status="status" @bet="onBetClick" />
     </div>
   </div>
 </template>
 
 <style scoped>
-/* No changes needed here */
+/* no changes needed */
 </style>

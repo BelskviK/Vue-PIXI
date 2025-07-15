@@ -17,6 +17,7 @@
         </Suspense>
 
         <BetsControl
+          v-if="config.betsControlProps.showControls !== false"
           :classes="config.betsClasses"
           v-bind="config.betsControlProps"
           :theme="config.theme"
