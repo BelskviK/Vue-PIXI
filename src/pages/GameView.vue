@@ -1,9 +1,12 @@
-<!-- src/pages/GameView.vue -->
 <template>
   <div class="flex flex-col h-screen" :style="{ backgroundColor: pageBg }">
     <div class="flex-1 flex items-center justify-center">
       <div :class="config.wrapperBaseClasses" :style="wrapperStyle">
-        <Header :theme="config.theme" />
+        <Header
+          :key="gameId"
+          :theme="config.theme"
+          :classes="config.betsClasses"
+        />
 
         <Suspense>
           <template #default>
@@ -18,9 +21,14 @@
 
         <BetsControl
           v-if="config.betsControlProps.showControls !== false"
+          :key="gameId"
           :classes="config.betsClasses"
           v-bind="config.betsControlProps"
-          :theme="config.theme"
+          :theme="{
+            layoutgradientFrom: config.theme.layoutgradientFrom,
+            layoutgradientTo: config.theme.layoutgradientTo,
+            btn: config.theme.btn,
+          }"
         />
       </div>
     </div>

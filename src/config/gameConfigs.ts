@@ -12,7 +12,14 @@ export interface GameConfig {
     border: string;
   };
   betsClasses: string;
-  betsControlProps: Record<string, unknown>;
+  betsControlProps: {
+    panelType: string;
+    maxBet?: number;
+    gridSize?: number;
+    showControls?: boolean;
+    showPayoutChart?: boolean;
+    [key: string]: unknown;
+  };
 }
 
 export const gameConfigs: Record<string, GameConfig> = {
@@ -22,7 +29,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0676cf",
+      btn: "#662bb2",
       gradientFrom: "#8b5cf6",
       gradientTo: "#6d28d9",
       layoutgradientFrom: "#6b21a8",
@@ -31,7 +38,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     },
     betsClasses: "bg-gradient-to-r from-purple-500 to-purple-700",
     betsControlProps: {
-      panelType: "dice", // ← was "standard"
+      panelType: "dice",
       maxBet: 100,
       showControls: true,
     },
@@ -43,7 +50,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0676cf",
+      btn: "#017c80",
       gradientFrom: "#22d3ee",
       gradientTo: "#0891b2",
       layoutgradientFrom: "#0e7490",
@@ -52,7 +59,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     },
     betsClasses: "bg-gradient-to-r from-cyan-400 to-cyan-600",
     betsControlProps: {
-      panelType: "plinko", // matches folder/store key
+      panelType: "plinko",
       showPayoutChart: true,
       showControls: true,
     },
@@ -85,7 +92,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0676cf",
+      btn: "#3e6c00",
       gradientFrom: "#22c55e",
       gradientTo: "#15803d",
       layoutgradientFrom: "#16a34a",
@@ -94,7 +101,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     },
     betsClasses: "bg-gradient-to-r from-green-400 to-green-600",
     betsControlProps: {
-      panelType: "goal", // matches folder/store key
+      panelType: "goal",
       showControls: true,
     },
   },
@@ -105,7 +112,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0676cf",
+      btn: "#e28109",
       gradientFrom: "#f59e0b",
       gradientTo: "#ea580c",
       layoutgradientFrom: "#d97706",
@@ -125,7 +132,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0676cf",
+      btn: "#ca0348",
       gradientFrom: "#ef4444",
       gradientTo: "#b91c1c",
       layoutgradientFrom: "#dc2626",
@@ -139,13 +146,13 @@ export const gameConfigs: Record<string, GameConfig> = {
     },
   },
 
-  miniroulette: {
+  miniRoulette: {
     component: () => import("@/pages/games/mini-roulette/index.vue"),
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0676cf",
+      btn: "#018220",
       gradientFrom: "#10b981",
       gradientTo: "#059669",
       layoutgradientFrom: "#0d9488",
@@ -154,7 +161,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     },
     betsClasses: "bg-gradient-to-r from-emerald-500 to-emerald-700",
     betsControlProps: {
-      panelType: "miniRoulette", // matches folder/store key
+      panelType: "miniRoulette",
       showControls: true,
     },
   },
@@ -165,7 +172,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0676cf",
+      btn: "#194eae",
       gradientFrom: "#3b82f6",
       gradientTo: "#1d4ed8",
       layoutgradientFrom: "#2563eb",
@@ -185,7 +192,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0676cf",
+      btn: "#06378f",
       gradientFrom: "#e11d48",
       gradientTo: "#9f1239",
       layoutgradientFrom: "#be123c",
