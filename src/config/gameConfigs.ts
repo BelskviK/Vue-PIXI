@@ -20,14 +20,14 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#1e1b4b", // dark purple
-      gradientFrom: "#a78bfa", // purple-400
-      gradientTo: "#7c3aed", // purple-600
-      layoutgradientFrom: "#055a8e",
-      layoutgradientTo: "#00329a",
-      border: "#c084fc", // purple-300
+      bg: "#202020",
+      gradientFrom: "#8b5cf6",
+      gradientTo: "#6d28d9",
+      layoutgradientFrom: "#6b21a8",
+      layoutgradientTo: "#4c1d95",
+      border: "#c084fc",
     },
-    betsClasses: "bg-gradient-to-r from-purple-400 to-purple-600",
+    betsClasses: "bg-gradient-to-r from-purple-500 to-purple-700",
     betsControlProps: { panelType: "standard", maxBet: 100 },
   },
 
@@ -36,14 +36,14 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#0f172a", // very dark navy
-      gradientFrom: "#22d3ee", // cyan-400
-      gradientTo: "#14b8a6", // teal-400
-      layoutgradientFrom: "#055a8e",
-      layoutgradientTo: "#00329a",
-      border: "#5eead4", // teal-200
+      bg: "#202020",
+      gradientFrom: "#22d3ee",
+      gradientTo: "#0891b2",
+      layoutgradientFrom: "#0e7490",
+      layoutgradientTo: "#075985",
+      border: "#67e8f9",
     },
-    betsClasses: "bg-gradient-to-r from-cyan-400 to-teal-400",
+    betsClasses: "bg-gradient-to-r from-cyan-400 to-cyan-600",
     betsControlProps: { panelType: "plinko", showPayoutChart: true },
   },
 
@@ -55,8 +55,8 @@ export const gameConfigs: Record<string, GameConfig> = {
       bg: "#202020",
       gradientFrom: "#0781cc",
       gradientTo: "#0049db",
-      layoutgradientFrom: "#055a8e",
-      layoutgradientTo: "#00329a",
+      layoutgradientFrom: "#0369a1",
+      layoutgradientTo: "#1e40af",
       border: "#FB9C23",
     },
     betsClasses: "bg-gradient-to-r from-yellow-400 to-yellow-500",
@@ -68,30 +68,30 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#052e16", // very dark green
-      gradientFrom: "#34d399", // green-400
-      gradientTo: "#10b981", // green-500
-      layoutgradientFrom: "#055a8e",
-      layoutgradientTo: "#00329a",
-      border: "#6ee7b7", // green-200
+      bg: "#202020",
+      gradientFrom: "#22c55e",
+      gradientTo: "#15803d",
+      layoutgradientFrom: "#16a34a",
+      layoutgradientTo: "#166534",
+      border: "#4ade80",
     },
-    betsClasses: "bg-gradient-to-r from-green-400 to-green-500",
+    betsClasses: "bg-gradient-to-r from-green-400 to-green-600",
     betsControlProps: { panelType: "goal" },
   },
 
   hilo: {
-    component: () => import("@//pages/games/hilo/index.vue"),
+    component: () => import("@/pages/games/hilo/index.vue"),
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#331e00", // very dark orange
-      gradientFrom: "#fb923c", // orange-400
-      gradientTo: "#f97316", // orange-500
-      layoutgradientFrom: "#055a8e",
-      layoutgradientTo: "#00329a",
-      border: "#fdba74", // orange-300
+      bg: "#202020",
+      gradientFrom: "#f59e0b",
+      gradientTo: "#ea580c",
+      layoutgradientFrom: "#d97706",
+      layoutgradientTo: "#b45309",
+      border: "#fbbf24",
     },
-    betsClasses: "bg-gradient-to-r from-orange-400 to-orange-500",
+    betsClasses: "bg-gradient-to-r from-orange-400 to-orange-600",
     betsControlProps: { panelType: "hilo" },
   },
 
@@ -100,30 +100,29 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#2f0d10", // very dark red
-      gradientFrom: "#f87171", // red-400
-      gradientTo: "#ef4444", // red-500
-      layoutgradientFrom: "#055a8e",
-      layoutgradientTo: "#00329a",
-      border: "#fca5a5", // red-300
+      bg: "#202020",
+      gradientFrom: "#ef4444",
+      gradientTo: "#b91c1c",
+      layoutgradientFrom: "#dc2626",
+      layoutgradientTo: "#991b1b",
+      border: "#f87171",
     },
-    betsClasses: "bg-gradient-to-r from-red-400 to-red-500",
+    betsClasses: "bg-gradient-to-r from-red-400 to-red-600",
     betsControlProps: { panelType: "keno" },
   },
-
   miniroulette: {
     component: () => import("@/pages/games/mini-roulette/index.vue"),
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#1f2937", // dark slate
-      gradientFrom: "#f472b6", // pink-400
-      gradientTo: "#ec4899", // pink-500
-      layoutgradientFrom: "#055a8e",
-      layoutgradientTo: "#00329a",
-      border: "#f9a8d4", // pink-300
+      bg: "#202020",
+      gradientFrom: "#10b981", // emerald
+      gradientTo: "#059669",
+      layoutgradientFrom: "#0d9488",
+      layoutgradientTo: "#065f46",
+      border: "#34d399",
     },
-    betsClasses: "bg-gradient-to-r from-pink-400 to-pink-500",
+    betsClasses: "bg-gradient-to-r from-emerald-500 to-emerald-700",
     betsControlProps: { panelType: "miniRoulette" },
   },
 
@@ -132,14 +131,14 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#071f5b", // very dark indigo
-      gradientFrom: "#818cf8", // indigo-400
-      gradientTo: "#6366f1", // indigo-500
-      layoutgradientFrom: "#055a8e",
-      layoutgradientTo: "#00329a",
-      border: "#a5b4fc", // indigo-300
+      bg: "#202020",
+      gradientFrom: "#3b82f6",
+      gradientTo: "#1d4ed8",
+      layoutgradientFrom: "#2563eb",
+      layoutgradientTo: "#1e3a8a",
+      border: "#60a5fa",
     },
-    betsClasses: "bg-gradient-to-r from-indigo-400 to-indigo-500",
+    betsClasses: "bg-gradient-to-r from-blue-400 to-blue-600",
     betsControlProps: { panelType: "hotline" },
   },
 
@@ -148,14 +147,14 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#0f172a", // match Plinko’s dark bg
-      gradientFrom: "#93c5fd", // blue-300
-      gradientTo: "#3b82f6", // blue-500
-      layoutgradientFrom: "#055a8e",
-      layoutgradientTo: "#00329a",
-      border: "#60a5fa", // blue-400
+      bg: "#202020",
+      gradientFrom: "#e11d48",
+      gradientTo: "#9f1239",
+      layoutgradientFrom: "#be123c",
+      layoutgradientTo: "#881337",
+      border: "#f43f5e",
     },
-    betsClasses: "bg-gradient-to-r from-blue-300 to-blue-500",
+    betsClasses: "bg-gradient-to-r from-rose-500 to-rose-700",
     betsControlProps: { panelType: "balloon" },
   },
 };
