@@ -30,7 +30,11 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#c084fc",
     },
     betsClasses: "bg-gradient-to-r from-purple-500 to-purple-700",
-    betsControlProps: { panelType: "standard", maxBet: 100 },
+    betsControlProps: {
+      panelType: "dice", // ← was "standard"
+      maxBet: 100,
+      showControls: true,
+    },
   },
 
   plinko: {
@@ -47,7 +51,11 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#67e8f9",
     },
     betsClasses: "bg-gradient-to-r from-cyan-400 to-cyan-600",
-    betsControlProps: { panelType: "plinko", showPayoutChart: true },
+    betsControlProps: {
+      panelType: "plinko", // matches folder/store key
+      showPayoutChart: true,
+      showControls: true,
+    },
   },
 
   mines: {
@@ -64,7 +72,11 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#FB9C23",
     },
     betsClasses: "bg-gradient-to-r from-yellow-400 to-yellow-500",
-    betsControlProps: { panelType: "mines", gridSize: 5, showControls: true },
+    betsControlProps: {
+      panelType: "mines",
+      gridSize: 5,
+      showControls: true,
+    },
   },
 
   goal: {
@@ -81,7 +93,10 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#4ade80",
     },
     betsClasses: "bg-gradient-to-r from-green-400 to-green-600",
-    betsControlProps: { panelType: "goal" },
+    betsControlProps: {
+      panelType: "goal", // matches folder/store key
+      showControls: true,
+    },
   },
 
   hilo: {
@@ -98,7 +113,10 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#fbbf24",
     },
     betsClasses: "bg-gradient-to-r from-orange-400 to-orange-600",
-    betsControlProps: { panelType: "hilo" },
+    betsControlProps: {
+      panelType: "hilo",
+      showControls: true,
+    },
   },
 
   keno: {
@@ -115,7 +133,10 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#f87171",
     },
     betsClasses: "bg-gradient-to-r from-red-400 to-red-600",
-    betsControlProps: { panelType: "keno" },
+    betsControlProps: {
+      panelType: "keno",
+      showControls: true,
+    },
   },
 
   miniroulette: {
@@ -132,7 +153,10 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#34d399",
     },
     betsClasses: "bg-gradient-to-r from-emerald-500 to-emerald-700",
-    betsControlProps: { panelType: "miniRoulette" },
+    betsControlProps: {
+      panelType: "miniRoulette", // matches folder/store key
+      showControls: true,
+    },
   },
 
   hotline: {
@@ -149,7 +173,10 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#60a5fa",
     },
     betsClasses: "bg-gradient-to-r from-blue-400 to-blue-600",
-    betsControlProps: { panelType: "hotline" },
+    betsControlProps: {
+      panelType: "hotline",
+      showControls: true,
+    },
   },
 
   balloon: {
@@ -166,6 +193,9 @@ export const gameConfigs: Record<string, GameConfig> = {
       border: "#f43f5e",
     },
     betsClasses: "bg-gradient-to-r from-rose-500 to-rose-700",
-    betsControlProps: { panelType: "balloon" },
+    betsControlProps: {
+      panelType: "balloon",
+      showControls: true,
+    },
   },
 };
