@@ -7,7 +7,7 @@
       <!-- game selector button -->
       <button
         @click="toggleDropdown"
-        class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow text-white text-sm px-2 transition-transform duration-100 active:translate-y-1 active:shadow-inner"
+        class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow text-white text-sm px-2 transition-transform duration-100 active:translate-y-[2px] active:shadow-inner"
         :style="{ backgroundColor: theme.btn }"
       >
         <span class="flex-1 text-center font-normal truncate">
@@ -32,7 +32,7 @@
       <!-- how to play button (static color) -->
       <button
         @click="openHowToPlayModal"
-        class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow bg-[#f89a17] text-black text-sm px-2 transition-transform duration-100 active:translate-y-1 active:shadow-inner"
+        class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow bg-[#f89a17] text-black text-sm px-2 transition-transform duration-100 active:translate-y-[2px] active:shadow-inner"
       >
         <img :src="howTo" alt="" class="w-5 h-5 mr-1 filter brightness-0" />
         <span class="flex-1 text-center truncate">HOW TO PLAY?</span>
@@ -44,7 +44,7 @@
       <p class="opacity-50">USD</p>
       <button
         @click="openMenu"
-        class="p-1 rounded-full transition-transform duration-100 active:translate-y-1"
+        class="p-1 rounded-full transition-transform duration-100 active:translate-y-[2px]"
         :style="{ backgroundColor: theme.btn }"
         aria-label="Open menu"
       >

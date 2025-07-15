@@ -7,14 +7,14 @@
     <div class="flex items-center bg-blue-900 rounded-full px-3 py-1">
       <button
         @click="emit('decrease')"
-        class="text-white text-lg leading-none focus:outline-none"
+        class="text-white text-lg leading-none focus:outline-none active:translate-y-[2px]"
       >
         &minus;
       </button>
       <span class="mx-2 text-white font-medium">{{ value.toFixed(2) }}</span>
       <button
         @click="emit('increase')"
-        class="text-white text-lg leading-none focus:outline-none"
+        class="text-white text-lg leading-none focus:outline-none active:translate-y-[2px]"
       >
         &plus;
       </button>
