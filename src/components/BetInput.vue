@@ -6,37 +6,66 @@
       :style="{ backgroundColor: classes }"
     >
       <!-- both children split 53% / 47% -->
-      <span class="flex flex-col items-center w-[53%]">
+      <span class="flex flex-col items-center w-[53%] relative">
         <p class="text-sm text-white font-semibold">Bet USD</p>
         <input
-          type="decimal"
-          :value="store.betValue.toFixed(2)"
-          class="bg-[#014873] rounded-full border-[1px] border-black text-white text-center font-bold w-full"
+          type="text"
+          :value="inputValue"
+          @click.stop="openNumPad"
+          class="bg-[#014873] rounded-full border-[1px] border-black text-white text-center font-bold w-full cursor-pointer"
           readonly
         />
+        <!-- Number pad dropdown -->
+        <div
+          v-if="numPadOpen"
+          ref="numPad"
+          class="absolute -top-[265px] left-1/2 transform -translate-x-1/2 w-[300px] [#2d7194] rounded-2xl p-4 z-20 border"
+          :style="{ backgroundColor: classes }"
+        >
+          <div class="grid grid-cols-3 gap-1 mb-1">
+            <button
+              v-for="key in keys"
+              :key="key"
+              @mousedown.prevent
+              @click="pressKey(key)"
+              class="text-white rounded-lg shadow-[1px_1px_1px_rgba(0,0,0,0.4),inset_1px_1px_0_rgba(255,255,255,0.2)] py-1 text-2xl font-semibold active:translate-y-[2px] border-black filter hover:brightness-90 transition-[filter] duration-150"
+              :style="{ backgroundColor: classes }"
+            >
+              <template v-if="key === 'back'">⌫</template>
+              <template v-else>{{ key }}</template>
+            </button>
+          </div>
+          <div class="flex justify-center">
+            <button
+              @click="confirmInput"
+              class="flex items-center justify-center bg-[#013352] rounded-lg px-6 w-full py-2 active:translate-y-[2px]"
+            >
+              <img :src="iconTick" alt="Confirm" class="w-6 h-6" />
+            </button>
+          </div>
+        </div>
       </span>
 
+      <!-- +/- and preset dropdown trigger -->
       <div
         class="flex flex-col items-end w-[47%] bg-blue-900 rounded-full py-1"
       >
         <div class="flex items-center">
           <button
-            @click="decrease()"
+            @click="decrease"
             class="bg-blue-900 hover:bg-[#025580] transition-colors duration-150 text-white text-lg leading-none focus:outline-none active:translate-y-[2px] border-[1px] border-black rounded-full w-11 h-11 shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
           >
             &minus;
           </button>
-
           <span
             ref="toggleBtn"
-            @click="toggleDropdown"
+            @click.stop="toggleDropdown"
             class="flex items-center justify-center mx-2 text-white font-medium border-[1px] border-black rounded-full w-11 h-11 active:translate-y-[2px] shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)] cursor-pointer"
           >
             <img :src="iconBetVariant" alt="" class="w-5 h-5" />
           </span>
-
           <button
-            @click="increase()"
+            @click="increase"
             class="bg-blue-900 hover:bg-[#025580] transition-colors duration-150 text-white text-lg leading-none focus:outline-none active:translate-y-[2px] border-[1px] border-black rounded-full w-11 h-11 shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
           >
             &plus;
@@ -45,7 +74,7 @@
       </div>
     </div>
 
-    <!-- Dropdown menu -->
+    <!-- Preset dropdown menu -->
     <div
       v-if="isOpen"
       ref="dropdown"
@@ -78,23 +107,22 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useMinesStore } from "@/games/mines/Store";
+import { useUserStore } from "@/stores/user";
 import iconBetVariant from "@/assets/icon-bet-variant.svg";
+import iconTick from "@/assets/icon-calculator-tick.svg";
 
-// Props
 const props = withDefaults(defineProps<{ classes?: string }>(), {
   classes: "#ffffff",
 });
 const { classes } = props;
 
-// Pinia store for bet value
 const store = useMinesStore();
+const userStore = useUserStore();
 
-// Dropdown state and refs
 const isOpen = ref(false);
-const dropdown = ref<HTMLElement | null>(null);
-const toggleBtn = ref<HTMLElement | null>(null);
-
-// List of preset amounts
+const numPadOpen = ref(false);
+const inputValue = ref(store.betValue.toFixed(2));
+const selectedAmount = ref(store.betValue.toFixed(2));
 const amounts = [
   "0.10",
   "0.20",
@@ -112,61 +140,84 @@ const amounts = [
   "50.00",
   "100.00",
 ];
+const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "back"];
 
-// Currently selected amount
-const selectedAmount = ref<string | null>(null);
+const toggleBtn = ref<HTMLElement | null>(null);
+const dropdown = ref<HTMLElement | null>(null);
+const numPad = ref<HTMLElement | null>(null);
 
-// Initialize selectedAmount from store
-selectedAmount.value = store.betValue.toFixed(2);
-
-// Toggle dropdown visibility
 function toggleDropdown() {
   isOpen.value = !isOpen.value;
+  if (isOpen.value) numPadOpen.value = false;
 }
 
-// Increase/decrease functions
-function increase() {
-  store.betValue = parseFloat((store.betValue + 0.1).toFixed(2));
-  selectedAmount.value = store.betValue.toFixed(2);
-}
-function decrease() {
-  const newVal = parseFloat((store.betValue - 0.1).toFixed(2));
-  store.betValue = newVal > 0 ? newVal : store.betValue;
-  selectedAmount.value = store.betValue.toFixed(2);
+function openNumPad() {
+  numPadOpen.value = true;
+  inputValue.value = "";
+  isOpen.value = false;
 }
 
-// Select an amount and emit update (dropdown stays open, button stays highlighted)
+function closeAll() {
+  isOpen.value = false;
+  numPadOpen.value = false;
+}
+
 function selectAmount(amount: string) {
-  store.betValue = parseFloat(amount);
-  selectedAmount.value = amount;
+  setBet(amount);
 }
 
-// Close dropdown when clicking outside
-function onClickOutside(event: MouseEvent) {
-  const target = event.target as Node;
+function increase() {
+  setBet((store.betValue + 0.1).toFixed(2));
+}
+
+function decrease() {
+  const next = store.betValue - 0.1;
+  setBet((next >= 0.1 ? next : store.betValue).toFixed(2));
+}
+
+function pressKey(key: string) {
+  if (key === "back") inputValue.value = inputValue.value.slice(0, -1);
+  else if (key === "." && inputValue.value.includes(".")) return;
+  else inputValue.value += key;
+}
+
+function confirmInput() {
+  let val = parseFloat(inputValue.value);
+  if (isNaN(val) || val === 0) val = 0.1;
+  setBet(val.toFixed(2));
+  closeAll();
+}
+
+function setBet(amountStr: string) {
+  const amount = parseFloat(amountStr);
+  // if requested > balance, cap at balance
+  const cap = parseFloat(userStore.balance.toFixed(2));
+  const final = amount > cap ? cap : amount;
+  store.setBetValue(final);
+  inputValue.value = final.toFixed(2);
+  selectedAmount.value = final.toFixed(2);
+}
+
+function handleClickOutside(e: MouseEvent) {
+  const t = e.target as Node;
   if (
-    isOpen.value &&
-    dropdown.value &&
-    toggleBtn.value &&
-    !dropdown.value.contains(target) &&
-    !toggleBtn.value.contains(target)
+    !dropdown.value?.contains(t) &&
+    !toggleBtn.value?.contains(t) &&
+    !numPad.value?.contains(t)
   ) {
-    isOpen.value = false;
+    closeAll();
   }
 }
 
-onMounted(() => {
-  document.addEventListener("click", onClickOutside);
-});
+onMounted(() => document.addEventListener("click", handleClickOutside));
+onBeforeUnmount(() =>
+  document.removeEventListener("click", handleClickOutside)
+);
 
-onBeforeUnmount(() => {
-  document.removeEventListener("click", onClickOutside);
-});
-
-// Watch store changes (external updates)
 watch(
   () => store.betValue,
   (val) => {
+    inputValue.value = val.toFixed(2);
     selectedAmount.value = val.toFixed(2);
   }
 );

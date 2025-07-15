@@ -1,5 +1,5 @@
-// src/games/mines/Store.ts
 import { defineStore } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 export type ButtonStatus =
   | "betActive"
@@ -10,10 +10,9 @@ export type ButtonStatus =
 export const useMinesStore = defineStore("mines", {
   state: () => ({
     status: "betActive" as ButtonStatus,
-    betValue: 0.1, // 🎯 New default bet
+    betValue: 0.1, // default starting bet value
   }),
   actions: {
-    // existing click flow
     handleClick() {
       console.log("[Store] handleClick – old status =", this.status);
       if (this.status === "betActive") {
@@ -31,20 +30,18 @@ export const useMinesStore = defineStore("mines", {
       }
     },
 
-    // 🆕 Increase bet by 0.10
     increaseBet() {
       this.betValue = parseFloat((this.betValue + 0.1).toFixed(2));
     },
-
-    // 🆕 Decrease bet by 0.10 (clamp at 0.10)
     decreaseBet() {
       const next = parseFloat((this.betValue - 0.1).toFixed(2));
       this.betValue = next >= 0.1 ? next : this.betValue;
     },
-
-    // 🆕 Set to a specific amount (e.g. from dropdown)
     setBetValue(amount: number) {
-      this.betValue = parseFloat(amount.toFixed(2));
+      // ensure we never exceed user balance
+      const userStore = useUserStore();
+      const cap = parseFloat(userStore.balance.toFixed(2));
+      this.betValue = amount > cap ? cap : parseFloat(amount.toFixed(2));
     },
   },
 });

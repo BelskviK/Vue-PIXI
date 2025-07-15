@@ -1,8 +1,10 @@
 <template>
   <button @click="handleClick" :class="buttonClasses">
-    <span v-if="mode === 'countdown'" class="text-white font-semibold">
+    <!-- show the countdown when in countdown mode -->
+    <span v-if="mode === 'countdown'" class="text-white font-semibold text-lg">
       {{ countdown }}
     </span>
+    <!-- always show the icon otherwise -->
     <img
       v-else
       :src="iconAutoPlay"
@@ -29,7 +31,7 @@ const mode = ref<"active" | "disabled" | "countdown">(
 );
 let timer: ReturnType<typeof setInterval> | null = null;
 
-// watch active prop
+// watch active prop (no immediate to avoid firing on mount)
 watch(
   () => props.active,
   (val) => {
@@ -49,8 +51,7 @@ watch(
         }
       }, 1000);
     }
-  },
-  { immediate: true }
+  }
 );
 
 function clearTimer() {
@@ -68,17 +69,24 @@ function handleClick() {
   }
 }
 
-// compute classes
+// compute classes for all modes
 const buttonClasses = computed(() => {
   const base =
     "w-16 h-16 flex items-center justify-center rounded-full border-2 shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]";
   if (mode.value === "active") {
     return [base, "active:translate-y-[2px]", "border-green-400 bg-green-500"];
   } else if (mode.value === "countdown") {
-    return [base, "border-gray-400 bg-[#cc000e] text-lg"];
+    return [base, "border-gray-400 bg-[#cc000e]", "text-white", "text-lg"];
   } else {
-    // disabled
-    return [base, "border-gray-400 bg-gray-800 opacity-50"];
+    // disabled: same green as active but darker, and not clickable
+    return [
+      base,
+      "active:translate-y-[2px]",
+      "border-green-400",
+      "bg-green-600",
+      "cursor-not-allowed",
+      "pointer-events-none",
+    ];
   }
 });
 </script>
