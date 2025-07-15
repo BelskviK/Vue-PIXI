@@ -1,37 +1,53 @@
-<!-- src/pages/GameView.vue -->
-<script setup lang="ts">
-import { useRoute } from "vue-router";
-import { computed, defineAsyncComponent } from "vue";
-
-const route = useRoute();
-
-// Compute the async component factory based on the `id` param
-const GameComponent = computed(() => {
-  const id = route.params.id as string;
-
-  // If you’ve kept each game under /pages/games/<id>/index.vue:
-  return defineAsyncComponent(() => import(`@/pages/games/${id}/index.vue`));
-
-  // Or, if you must support MinesGame.vue naming:
-  // return defineAsyncComponent(() => import(`@/pages/games/${id}/${id === 'mines' ? 'MinesGame.vue' : 'index.vue'}`))
-});
-</script>
-
 <template>
-  <div class="flex flex-col h-full bg-[#202020]">
+  <div class="flex flex-col h-screen" :style="{ backgroundColor: pageBg }">
+    <!-- Pass per-game props to BetsControl -->
+
+    <!-- Game card wrapper with dynamic theme -->
     <div class="flex-1 flex items-center justify-center">
-      <!--
-        Suspense gives you a built-in loading/error fallback.
-        You can style these slots or remove Suspense if you don’t need it.
-      -->
-      <Suspense>
-        <template #default>
-          <component :is="GameComponent" />
-        </template>
-        <template #fallback>
-          <div class="text-white">Loading game…</div>
-        </template>
-      </Suspense>
+      <div :class="config.wrapperBaseClasses" :style="wrapperStyle">
+        <Header />
+        <Suspense>
+          <template #default>
+            <component :is="GameComponent" />
+          </template>
+          <template #fallback>
+            <div class="text-white flex items-center justify-center h-full">
+              Loading game…
+            </div>
+          </template>
+        </Suspense>
+        <BetsControl v-bind="config.betsControlProps" />
+      </div>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { useRoute } from "vue-router";
+import { computed, defineAsyncComponent } from "vue";
+import Header from "@/components/Header.vue";
+import BetsControl from "@/components/BetControls.vue";
+import { gameConfigs } from "@/config/gameConfigs";
+
+// Current game ID
+const route = useRoute();
+const gameId = computed(() => (route.params.id as string) || "mines");
+// Load config or fallback
+const config = computed(
+  () => gameConfigs[gameId.value] || gameConfigs["mines"]
+);
+
+// Lazy-load game component
+const GameComponent = computed(() =>
+  defineAsyncComponent(config.value.component)
+);
+
+// Inline styles for theme
+const wrapperStyle = computed(() => ({
+  background: `linear-gradient(to right, ${config.value.theme.gradientFrom}, ${config.value.theme.gradientTo})`,
+  border: `2px solid ${config.value.theme.border}`,
+}));
+
+// Page background (solid)
+const pageBg = computed(() => config.value.theme.bg);
+</script>

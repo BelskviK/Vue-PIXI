@@ -1,8 +1,17 @@
-<!-- src/games/mines/components/BetControls.vue -->
-<template>
-  <div
-    class="w-full h-20 bg-gradient-to-r from-[#055a8e] to-[#00329a] flex items-center justify-center space-x-4 shadow-inner rounded-xl"
-  ></div>
-</template>
+<script setup lang="ts">
+// Define props based on gameConfigs.betsControlProps
+const props = defineProps<{
+  panelType: string;
+  [key: string]: any;
+}>();
+</script>
 
-<script setup lang="ts"></script>
+<template>
+  <!-- Dynamically choose panel component by panelType -->
+  <component
+    :is="`BetsPanel${
+      props.panelType.charAt(0).toUpperCase() + props.panelType.slice(1)
+    }`"
+    v-bind="props"
+  />
+</template>
