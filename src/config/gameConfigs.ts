@@ -5,10 +5,7 @@ export interface GameConfig {
   theme: {
     bg: string;
     btn: string;
-    gradientFrom: string;
-    gradientTo: string;
-    layoutgradientFrom: string;
-    layoutgradientTo: string;
+    background: string; // full gradient CSS
     border: string;
   };
   betsClasses: string;
@@ -30,10 +27,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     theme: {
       bg: "#202020",
       btn: "#662bb2",
-      gradientFrom: "#8b5cf6",
-      gradientTo: "#6d28d9",
-      layoutgradientFrom: "#6b21a8",
-      layoutgradientTo: "#4c1d95",
+      background: "linear-gradient(-57deg, #421cae 3%, #6d2eb3 85%)",
       border: "#c084fc",
     },
     betsClasses: "bg-gradient-to-r from-purple-500 to-purple-700",
@@ -50,11 +44,8 @@ export const gameConfigs: Record<string, GameConfig> = {
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0267a5 ",
-      gradientFrom: "#22d3ee",
-      gradientTo: "#0891b2",
-      layoutgradientFrom: "#0e7490",
-      layoutgradientTo: "#075985",
+      btn: "#0267a5",
+      background: "radial-gradient(circle at 50% 62%, #1cc49a, #0870aa 88%)",
       border: "#67e8f9",
     },
     betsClasses: "bg-gradient-to-r from-cyan-400 to-cyan-600",
@@ -72,10 +63,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     theme: {
       bg: "#202020",
       btn: "#0267a5",
-      gradientFrom: "#0781cc",
-      gradientTo: "#0049db",
-      layoutgradientFrom: "#0369a1",
-      layoutgradientTo: "#1e40af",
+      background: "linear-gradient(-57deg, #0048dc 3%, #0781cc 85%)",
       border: "#FB9C23",
     },
     betsClasses: "bg-gradient-to-r from-yellow-400 to-yellow-500",
@@ -93,10 +81,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     theme: {
       bg: "#202020",
       btn: "#3e6c00",
-      gradientFrom: "#22c55e",
-      gradientTo: "#15803d",
-      layoutgradientFrom: "#16a34a",
-      layoutgradientTo: "#166534",
+      background: "radial-gradient(circle at 50% 62%, #6bb800, #295120 88%)",
       border: "#4ade80",
     },
     betsClasses: "bg-gradient-to-r from-green-400 to-green-600",
@@ -113,10 +98,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     theme: {
       bg: "#202020",
       btn: "#e28109",
-      gradientFrom: "#f59e0b",
-      gradientTo: "#ea580c",
-      layoutgradientFrom: "#d97706",
-      layoutgradientTo: "#b45309",
+      background: "radial-gradient(circle at 50% 62%, #ebc70b, #d37006 88%)",
       border: "#fbbf24",
     },
     betsClasses: "bg-gradient-to-r from-orange-400 to-orange-600",
@@ -133,10 +115,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     theme: {
       bg: "#202020",
       btn: "#ca0348",
-      gradientFrom: "#ef4444",
-      gradientTo: "#b91c1c",
-      layoutgradientFrom: "#dc2626",
-      layoutgradientTo: "#991b1b",
+      background: "radial-gradient(circle at 50% 62%, #dc004d, #9b0a3d 57%)",
       border: "#f87171",
     },
     betsClasses: "bg-gradient-to-r from-red-400 to-red-600",
@@ -153,10 +132,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     theme: {
       bg: "#202020",
       btn: "#018220",
-      gradientFrom: "#10b981",
-      gradientTo: "#059669",
-      layoutgradientFrom: "#0d9488",
-      layoutgradientTo: "#065f46",
+      background: "radial-gradient(circle at 50% 62%, #018e38, #03602c 88%)",
       border: "#34d399",
     },
     betsClasses: "bg-gradient-to-r from-emerald-500 to-emerald-700",
@@ -173,10 +149,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     theme: {
       bg: "#202020",
       btn: "#194eae",
-      gradientFrom: "#3b82f6",
-      gradientTo: "#1d4ed8",
-      layoutgradientFrom: "#2563eb",
-      layoutgradientTo: "#1e3a8a",
+      background: "radial-gradient(circle at 50% 62%, #004dc0, #3b5097 88%)",
       border: "#60a5fa",
     },
     betsClasses: "bg-gradient-to-r from-blue-400 to-blue-600",
@@ -193,10 +166,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     theme: {
       bg: "#202020",
       btn: "#06378f",
-      gradientFrom: "#e11d48",
-      gradientTo: "#9f1239",
-      layoutgradientFrom: "#be123c",
-      layoutgradientTo: "#881337",
+      background: "radial-gradient(circle at 50% 62%, #022059, #022059 88%)",
       border: "#f43f5e",
     },
     betsClasses: "bg-gradient-to-r from-rose-500 to-rose-700",

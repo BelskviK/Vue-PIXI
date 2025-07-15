@@ -12,7 +12,7 @@
     <img
       :src="minesBomb"
       alt="bomb"
-      class="absolute hidden md:block top-[46%] right-[-8px] w-[154px] h-[305px] transform -translate-y-1/2 z-0 pointer-events-none"
+      class="absolute hidden md:block top-[46%] right-[-100px] w-[276px] h-[305px] transform -translate-y-1/2 z-0 pointer-events-none"
     />
 
     <!-- Actual Mines game component -->

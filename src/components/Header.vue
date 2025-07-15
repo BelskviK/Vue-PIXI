@@ -1,7 +1,6 @@
 <template>
   <div
-    class="relative w-full h-9 flex items-center px-4 shadow-md rounded-2xl text-white py-4"
-    :style="{ background: headerBg }"
+    class="relative w-full h-9 flex items-center px-4 shadow-md rounded-2xl text-white py-4 bg-black/30"
   >
     <div class="flex items-center w-[50%] space-x-4">
       <!-- game selector button -->
@@ -104,18 +103,12 @@ import howTo from "@/assets/icon-how-to-play.svg";
 
 const props = defineProps<{
   theme: {
-    layoutgradientFrom: string;
-    layoutgradientTo: string;
     btn: string;
   };
 }>();
 const { theme } = props;
 
 // reactive header background gradient
-const headerBg = computed(
-  () =>
-    `linear-gradient(to right, ${theme.layoutgradientFrom}, ${theme.layoutgradientTo})`
-);
 
 const router = useRouter();
 const dropdownOpen = ref(false);

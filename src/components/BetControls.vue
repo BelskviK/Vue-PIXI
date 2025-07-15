@@ -22,8 +22,6 @@ const props = defineProps<{
   maxBet?: number;
   gridSize?: number;
   theme: {
-    layoutgradientFrom: string;
-    layoutgradientTo: string;
     btn: string;
   };
   showControls?: boolean;
@@ -93,10 +91,7 @@ function onBetClick() {
     ]"
   >
     <div
-      class="w-full py-4 md:py-3 flex items-center justify-center flex-col-reverse md:flex-row gap-y-6 md:space-x-4 space-x-0 shadow-inner rounded-xl"
-      :style="{
-        background: `linear-gradient(to right, ${theme.layoutgradientFrom}, ${theme.layoutgradientTo})`,
-      }"
+      class="w-full py-4 md:py-3 flex items-center justify-center flex-col-reverse md:flex-row gap-y-6 md:space-x-4 space-x-0 shadow-inner rounded-xl bg-black/30"
     >
       <BetInput
         :value="betValue"

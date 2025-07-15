@@ -3,7 +3,7 @@
     <div class="flex items-center justify-center h-full w-full">
       <div
         class="relative flex flex-col w-full max-w-[970px] mx-2 h-full md:max-h-[540px] overflow-hidden rounded-xl border-0 md:border-2 md:border-solid"
-        :style="[wrapperStyle, { borderColor: config.theme.border }]"
+        :style="wrapperStyle"
       >
         <!-- Header: bottom on small screens, top on md+ -->
         <Header
@@ -33,11 +33,7 @@
           :key="gameId"
           :classes="config.betsClasses"
           v-bind="config.betsControlProps"
-          :theme="{
-            layoutgradientFrom: config.theme.layoutgradientFrom,
-            layoutgradientTo: config.theme.layoutgradientTo,
-            btn: config.theme.btn,
-          }"
+          :theme="{ btn: config.theme.btn }"
           class="order-1 md:order-last md:h-[70px] h-[145px]"
         />
       </div>
@@ -63,11 +59,8 @@ const GameComponent = computed(() =>
 );
 
 const wrapperStyle = computed(() => ({
-  background: `linear-gradient(
-    to right,
-    ${config.value.theme.gradientFrom},
-    ${config.value.theme.gradientTo}
-  )`,
+  backgroundImage: config.value.theme.background,
+  borderColor: config.value.theme.border,
 }));
 
 const pageBg = computed(() => config.value.theme.bg);
