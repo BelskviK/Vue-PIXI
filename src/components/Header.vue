@@ -7,7 +7,7 @@
       <!-- game selector button -->
       <button
         @click="toggleDropdown"
-        class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow text-white text-sm px-2 transition-transform duration-100 active:translate-y-[2px] active:shadow-inner"
+        class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow text-white text-sm px-2 transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
         :style="{ backgroundColor: theme.btn }"
       >
         <span class="flex-1 text-center font-normal truncate">
@@ -44,7 +44,7 @@
       <p class="opacity-50">USD</p>
       <button
         @click="openMenu"
-        class="p-1 rounded-full transition-transform duration-100 active:translate-y-[2px]"
+        class="p-1 rounded-full transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
         :style="{ backgroundColor: theme.btn }"
         aria-label="Open menu"
       >

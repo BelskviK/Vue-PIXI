@@ -50,7 +50,7 @@ function handleClick() {
     :disabled="isDisabled"
     @click="handleClick"
     :class="[
-      'relative inline-flex items-center justify-center w-[300px] h-14 rounded-3xl font-semibold text-lg text-white tracking-wide transition-transform duration-75 focus:outline-none active:translate-y-[2px]',
+      'relative inline-flex items-center justify-center w-[300px] h-14 rounded-3xl font-semibold text-lg text-white tracking-wide transition-transform duration-75 focus:outline-none active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]',
       opacityClass,
     ]"
   >

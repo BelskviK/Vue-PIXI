@@ -71,7 +71,7 @@ function handleClick() {
 // compute classes
 const buttonClasses = computed(() => {
   const base =
-    "w-16 h-16 flex items-center justify-center rounded-full border-2 shadow-[2px_2px_0_rgba(0,0,0,0.6)]";
+    "w-16 h-16 flex items-center justify-center rounded-full border-2 shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]";
   if (mode.value === "active") {
     return [base, "active:translate-y-[2px]", "border-green-400 bg-green-500"];
   } else if (mode.value === "countdown") {

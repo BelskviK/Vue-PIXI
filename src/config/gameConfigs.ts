@@ -71,7 +71,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
       bg: "#202020",
-      btn: "#0676cf",
+      btn: "#0267a5",
       gradientFrom: "#0781cc",
       gradientTo: "#0049db",
       layoutgradientFrom: "#0369a1",
