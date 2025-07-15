@@ -6,12 +6,12 @@
     <img
       :src="minesStar"
       alt="star"
-      class="absolute top-1/2 left-[-8rem] transform -translate-y-1/2 w-80 h-80 z-0 pointer-events-none"
+      class="absolute hidden md:flex top-1/2 left-[-8rem] transform -translate-y-1/2 w-80 h-80 z-0 pointer-events-none"
     />
     <img
       :src="minesBomb"
       alt="bomb"
-      class="absolute top-1/2 right-[-8rem] transform -translate-y-1/2 w-80 h-80 z-0 pointer-events-none"
+      class="absolute hidden md:flex top-1/2 right-[-8rem] transform -translate-y-1/2 w-80 h-80 z-0 pointer-events-none"
     />
 
     <!-- Actual Mines game component -->
