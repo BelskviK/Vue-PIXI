@@ -67,16 +67,16 @@
     <!-- Dropdown menu -->
     <div
       v-if="dropdownOpen"
-      class="absolute top-full left-1 grid grid-cols-4 gap-2 bg-[#212226] p-4 z-50 rounded-lg"
+      class="absolute top-full left-1 grid grid-cols-4 gap-1 bg-[#212226] p-4 z-50 rounded-lg"
     >
       <div
         v-for="game in gameIcons"
         :key="game.routeName"
-        class="flex flex-col items-center hover:opacity-80 cursor-pointer"
+        class="flex flex-col items-center justify-end hover:opacity-80 cursor-pointer mb-2 w-[70px]"
         @click="onSelectGame(game)"
       >
-        <img :src="game.src" :alt="game.name" class="w-11 h-11 mb-1" />
-        <p class="text-sm opacity-70 font-extralight truncate">
+        <img :src="game.src" :alt="game.name" class="w-108 h-108 mb-1" />
+        <p class="text-[10px] opacity-70 font-extralight truncate">
           {{ game.name }}
         </p>
       </div>
