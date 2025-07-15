@@ -1,7 +1,9 @@
-<!-- src/components/Header.vue -->
 <template>
   <div
-    class="relative w-full h-9 bg-gradient-to-r from-[#055a8e] to-[#00329a] flex items-center px-4 shadow-md rounded-2xl text-white py-4"
+    class="relative w-full h-9 flex items-center px-4 shadow-md rounded-2xl text-white py-4"
+    :style="{
+      background: `linear-gradient(to right, ${props.theme.layoutgradientFrom}, ${props.theme.layoutgradientTo})`,
+    }"
   >
     <div class="flex items-center w-[50%] space-x-7">
       <!-- game selector button -->
@@ -9,9 +11,9 @@
         @click="toggleDropdown"
         class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow border-[1px] border-black bg-[#0267a5] hover:bg-[#015d94] text-white text-sm px-1 mx-2 -ml-3 py-[1px] transition-transform duration-100 active:translate-y-1 active:shadow-inner"
       >
-        <span class="flex-1 text-center font-normal">{{
-          selectedGame.name.toUpperCase()
-        }}</span>
+        <span class="flex-1 text-center font-normal">
+          {{ selectedGame.name.toUpperCase() }}
+        </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="w-4 h-4 mr-2"
@@ -101,6 +103,17 @@ interface GameType {
   routeName: string;
 }
 
+// accept the current game's gradient theme
+const props = defineProps<{
+  theme: {
+    gradientFrom: string;
+    gradientTo: string;
+    layoutgradientFrom: string;
+    layoutgradientTo: string;
+  };
+}>();
+const { theme } = props;
+
 const router = useRouter();
 const dropdownOpen = ref(false);
 const modalOpen = ref(false);
@@ -119,7 +132,11 @@ const gameIcons: GameType[] = [
   { name: "Hi-Lo", src: iconHiLo, routeName: "HiLo" },
   { name: "Mines", src: iconMines, routeName: "Mines" },
   { name: "Keno", src: iconKeno, routeName: "Keno" },
-  { name: "Mini Roulette", src: iconMiniRoulette, routeName: "MiniRoulette" },
+  {
+    name: "Mini Roulette",
+    src: iconMiniRoulette,
+    routeName: "MiniRoulette",
+  },
   { name: "Hotline", src: iconHotline, routeName: "Hotline" },
   { name: "Balloon", src: iconBalloon, routeName: "Balloon" },
 ];
@@ -138,7 +155,6 @@ function openHowToPlayModal() {
 function onSelectGame(game: GameType) {
   selectedGame.value = game;
   dropdownOpen.value = false;
-  // Navigate via the dynamic GameView route by id param
   router.push({
     name: "GameView",
     params: { id: game.routeName.toLowerCase() },
