@@ -3,7 +3,6 @@
     <!-- Main BetInput component -->
     <div
       class="flex items-center justify-between w-[300px] h-[50px] border border-[rgba(0,0,0,0.53)] rounded-[30px] shadow-[inset_1px_1px_#fff1cd33] px-3"
-      :style="{ backgroundColor: classes }"
     >
       <span class="flex flex-col items-start w-full relative">
         <div
@@ -14,7 +13,7 @@
             type="text"
             :value="inputValue"
             @click.stop="openNumPad"
-            class="bg-[#014873] rounded-full border-[1px] border-black text-white text-center font-bold cursor-pointer w-full"
+            class="rounded-full border border-black/60 bg-black/30 text-white text-center font-bold cursor-pointer w-full"
             readonly
           />
         </div>

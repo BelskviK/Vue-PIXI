@@ -3,7 +3,6 @@ export interface GameConfig {
   component: () => Promise<any>;
   wrapperBaseClasses: string;
   theme: {
-    bg: string;
     btn: string;
     background: string; // full gradient CSS
     border: string;
@@ -25,8 +24,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#202020",
-      btn: "#662bb2",
+      btn: "#6d23c1",
       background: "linear-gradient(-57deg, #421cae 3%, #6d2eb3 85%)",
       border: "#c084fc",
     },
@@ -43,8 +41,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#202020",
-      btn: "#0267a5",
+      btn: "#017c80",
       background: "radial-gradient(circle at 50% 62%, #1cc49a, #0870aa 88%)",
       border: "#67e8f9",
     },
@@ -61,7 +58,6 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#202020",
       btn: "#0267a5",
       background: "linear-gradient(-57deg, #0048dc 3%, #0781cc 85%)",
       border: "#FB9C23",
@@ -79,7 +75,6 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#202020",
       btn: "#3e6c00",
       background: "radial-gradient(circle at 50% 62%, #6bb800, #295120 88%)",
       border: "#4ade80",
@@ -96,7 +91,6 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#202020",
       btn: "#e28109",
       background: "radial-gradient(circle at 50% 62%, #ebc70b, #d37006 88%)",
       border: "#fbbf24",
@@ -113,7 +107,6 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#202020",
       btn: "#ca0348",
       background: "radial-gradient(circle at 50% 62%, #dc004d, #9b0a3d 57%)",
       border: "#f87171",
@@ -130,7 +123,6 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#202020",
       btn: "#018220",
       background: "radial-gradient(circle at 50% 62%, #018e38, #03602c 88%)",
       border: "#34d399",
@@ -147,7 +139,6 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#202020",
       btn: "#194eae",
       background: "radial-gradient(circle at 50% 62%, #004dc0, #3b5097 88%)",
       border: "#60a5fa",
@@ -164,7 +155,6 @@ export const gameConfigs: Record<string, GameConfig> = {
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
     theme: {
-      bg: "#202020",
       btn: "#06378f",
       background: "radial-gradient(circle at 50% 62%, #022059, #022059 88%)",
       border: "#f43f5e",
