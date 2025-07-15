@@ -21,7 +21,7 @@
     <!-- content: icon+label for bet, amount with cashout label for cashout -->
     <span
       :class="[
-        'relative z-10 w-full px-6',
+        'relative   w-full px-6',
         props.status.includes('cashout')
           ? 'flex flex-col items-center justify-center space-y-1'
           : 'flex items-center justify-between',

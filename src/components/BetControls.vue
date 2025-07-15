@@ -89,11 +89,11 @@ function onBetClick() {
     v-if="showControls !== false"
     :class="[
       classes,
-      'w-full h-20 flex items-center justify-center shadow-inner rounded-xl',
+      'w-full   flex items-center justify-center shadow-inner rounded-xl',
     ]"
   >
     <div
-      class="w-full h-20 flex items-center justify-center space-x-4 shadow-inner rounded-xl"
+      class="w-full py-4 md:py-3 flex items-center justify-center flex-col-reverse md:flex-row gap-y-6 md:space-x-4 space-x-0 shadow-inner rounded-xl"
       :style="{
         background: `linear-gradient(to right, ${theme.layoutgradientFrom}, ${theme.layoutgradientTo})`,
       }"

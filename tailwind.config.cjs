@@ -36,21 +36,7 @@
         "gray-dark": "#343a40",
       },
       fontFamily: {
-        sans: [
-          "-apple-system",
-          "BlinkMacSystemFont",
-          "Segoe UI",
-          "Roboto",
-          "Helvetica Neue",
-          "Arial",
-          "Noto Sans",
-          "Liberation Sans",
-          "sans-serif",
-          "Apple Color Emoji",
-          "Segoe UI Emoji",
-          "Segoe UI Symbol",
-          "Noto Color Emoji",
-        ],
+        sans: ["Roboto", "ui-sans-serif", "system-ui" /* …etc… */],
         mono: [
           "SFMono-Regular",
           "Menlo",

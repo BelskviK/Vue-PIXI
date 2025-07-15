@@ -7,7 +7,7 @@
     >
       <span class="flex flex-col items-start w-full relative">
         <div
-          class="flex flex-col items-center justify-center text-[12px] w-full py-8"
+          class="flex flex-col items-center justify-center text-[12px] w-full"
         >
           <p class="text-white text-center font-semibold">Bet USD</p>
           <input
@@ -79,10 +79,10 @@
     <div
       v-if="isOpen"
       ref="dropdown"
-      class="absolute bottom-full left-0 w-[375px] bg-[#032e49] rounded-xl p-4 z-10"
+      class="absolute bottom-full left-0 w-[300px] bg-[#032e49] rounded-xl p-4 z-10"
     >
       <p
-        class="text-center text-white text-[12px] opacity-80 font-semibold -mt-2 mb-1"
+        class="text-center text-white text-[14px] opacity-80 font-bold -mt-2 mb-1"
       >
         Bet USD
       </p>
@@ -92,7 +92,7 @@
           :key="amount"
           @click="selectAmount(amount)"
           :class="[
-            'rounded-full py-1 text-center font-medium active:translate-y-[2px]',
+            'rounded-full border border-black py-1 text-center font-medium active:translate-y-[2px] text-xs',
             selectedAmount === amount
               ? 'bg-[#2f82b5] text-white'
               : 'bg-[#094164] text-white hover:bg-[#0b5679]',

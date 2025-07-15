@@ -1,7 +1,7 @@
 <template>
   <button
     @click="handleClick"
-    class="w-full max-w-[50px] h-[50px] mr-4 rounded-full"
+    class="w-full max-w-[50px] h-[50px] mr-3 rounded-full"
     :class="buttonClasses"
   >
     <!-- show the countdown when in countdown mode -->
