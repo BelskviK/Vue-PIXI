@@ -80,7 +80,7 @@ watch(betValue, (newVal) => {
       />
       <BetAuto :active="isAuto" @toggle="toggleAuto" />
       <!-- BetButton now has a static green background -->
-      <BetButton @bet="placeBet" />
+      <BetButton status="" @bet="placeBet" />
     </div>
   </div>
 </template>
