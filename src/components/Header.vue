@@ -6,7 +6,7 @@
       <!-- game selector button -->
       <button
         @click="toggleDropdown"
-        class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow text-white text-sm px-2 transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
+        class="flex items-center justify-center w-[130px] h-[24px] rounded-3xl shadow text-white text-[12px] px-2 transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
         :style="{ backgroundColor: theme.btn }"
       >
         <span class="flex-1 text-center font-normal truncate">
@@ -31,19 +31,25 @@
       <!-- how to play button (static color) -->
       <button
         @click="openHowToPlayModal"
-        class="flex items-center justify-center w-[30%] h-7 rounded-3xl shadow bg-[#f89a17] text-black text-sm px-2 transition-transform duration-100 active:translate-y-[2px] active:shadow-inner"
+        class="flex items-center justify-center md:w-[150px] h-[22px] rounded-3xl shadow bg-[linear-gradient(to_bottom,_#f9a119,_#f38410)] text-black text-[12px] md:px-2 transition-transform duration-100 active:translate-y-[2px] active:shadow-inner"
       >
-        <img :src="howTo" alt="" class="w-5 h-5 mr-1 filter brightness-0" />
-        <span class="flex-1 text-center truncate">HOW TO PLAY?</span>
+        <img
+          :src="howTo"
+          alt=""
+          class="w-[16px] h-[16px] mx-1 md:mr-1 filter brightness-0"
+        />
+        <span class="hidden md:flex flex-1 text-center truncate"
+          >HOW TO PLAY?</span
+        >
       </button>
     </div>
 
-    <div class="flex justify-end items-center w-[50%] space-x-2">
-      <p class="font-mono text-sm">{{ balance.toLocaleString() }}</p>
+    <div class="flex justify-end items-center w-[50%] space-x-1 text-[12px]">
+      <p class="font-mono">{{ balance.toLocaleString() }}</p>
       <p class="opacity-50">USD</p>
       <button
         @click="openMenu"
-        class="p-1 rounded-full transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
+        class="p-1 rounded-full w-[24px] h-[24px] transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
         :style="{ backgroundColor: theme.btn }"
         aria-label="Open menu"
       >
@@ -51,7 +57,7 @@
           xmlns="http://www.w3.org/2000/svg"
           class="w-5 h-5"
           fill="none"
-          viewBox="0 0 24 24"
+          viewBox="0 0 28 28"
           stroke="currentColor"
         >
           <path
