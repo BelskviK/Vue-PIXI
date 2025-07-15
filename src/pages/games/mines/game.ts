@@ -1,4 +1,4 @@
-import MinesGame from "../mines/MinesGame.vue";
+import MinesGame from "@/pages/games/mines/index.vue";
 
 export default {
   id: "mines",

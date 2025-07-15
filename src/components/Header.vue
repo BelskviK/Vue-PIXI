@@ -34,12 +34,8 @@
     </div>
     <!-- Right: balance + menu -->
     <div class="flex justify-end items-center w-[50%] space-x-2">
-      <p class="font-mono text-sm">
-        {{ balance.toLocaleString() }}
-      </p>
-
+      <p class="font-mono text-sm">{{ balance.toLocaleString() }}</p>
       <p class="opacity-50">USD</p>
-
       <button
         class="p-1 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full"
         aria-label="Open menu"
@@ -65,15 +61,16 @@
       v-if="dropdownOpen"
       class="absolute top-full left-1 grid grid-cols-4 gap-x-2 gap-y-4 bg-[#212226] border border-black rounded-lg shadow-lg p-4 z-20"
     >
-      <a
+      <router-link
         v-for="(game, idx) in gameIcons"
         :key="idx"
-        :href="game.href"
-        class="flex flex-col items-center hover:opacity-80"
+        :to="game.route"
+        class="flex flex-col items-center hover:opacity-80 cursor-pointer"
+        @click="toggleDropdown"
       >
         <img :src="game.src" :alt="game.name" class="w-11 h-11 mb-1" />
         <p class="text-sm opacity-70 font-extralight">{{ game.name }}</p>
-      </a>
+      </router-link>
     </div>
   </div>
 </template>
@@ -82,78 +79,48 @@
 import { ref } from "vue";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
-
-// icons
-import iconBalloon from "../../../assets/gameIcons/icon-balloon.svg";
-import iconDice from "../../../assets/gameIcons/icon-dice.svg";
-import iconGoal from "../../../assets/gameIcons/icon-goal.svg";
-import iconHiLo from "../../../assets/gameIcons/icon-hi-lo.svg";
-import iconHotline from "../../../assets/gameIcons/icon-hotline.svg";
-import iconKeno from "../../../assets/gameIcons/icon-keno.svg";
-import iconMines from "../../../assets/gameIcons/icon-mines.svg";
-import iconMiniRoulette from "../../../assets/gameIcons/icon-mini-roulette.svg";
-import iconPlinko from "../../../assets/gameIcons/icon-plinko.svg";
-import howTo from "../../../assets/icon-how-to-play.svg";
+import iconBalloon from "@/assets/gameIcons/icon-balloon.svg";
+import iconDice from "@/assets/gameIcons/icon-dice.svg";
+import iconGoal from "@/assets/gameIcons/icon-goal.svg";
+import iconHiLo from "@/assets/gameIcons/icon-hi-lo.svg";
+import iconHotline from "@/assets/gameIcons/icon-hotline.svg";
+import iconKeno from "@/assets/gameIcons/icon-keno.svg";
+import iconMines from "@/assets/gameIcons/icon-mines.svg";
+import iconMiniRoulette from "@/assets/gameIcons/icon-mini-roulette.svg";
+import iconPlinko from "@/assets/gameIcons/icon-plinko.svg";
+import howTo from "@/assets/icon-how-to-play.svg";
 
 const dropdownOpen = ref(false);
 const modalOpen = ref(false);
+
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value;
 }
+
 function openHowToPlayModal() {
   modalOpen.value = !modalOpen.value;
 }
 
-// Pinia user store
 const userStore = useUserStore();
 const { balance } = storeToRefs(userStore);
 
-// list of game icons + links for dropdown
 const gameIcons = [
-  {
-    name: "Dice",
-    src: iconDice,
-    href: "https://turbo.spribegaming.com/dice?currency=USD&operator=demo&jurisdiction=CW&lang=EN&return_url=https:%2F%2Fspribe.co%2Fgames&user=41252&token=1GmUbXboehDv6lYllHy8QAppKTnSJcR5",
-  },
-  {
-    name: "Plinko",
-    src: iconPlinko,
-    href: "https://turbo.spribegaming.com/plinko?currency=USD&operator=demo&jurisdiction=CW&lang=EN&return_url=https:%2F%2Fspribe.co%2Fgames&user=41252&token=1GmUbXboehDv6lYllHy8QAppKTnSJcR5",
-  },
-  {
-    name: "Goal",
-    src: iconGoal,
-    href: "https://turbo.spribegaming.com/goal?currency=USD&operator=demo&jurisdiction=CW&lang=EN&return_url=https:%2F%2Fspribe.co%2Fgames&user=41252&token=1GmUbXboehDv6lYllHy8QAppKTnSJcR5",
-  },
-  {
-    name: "Hi-Lo",
-    src: iconHiLo,
-    href: "https://turbo.spribegaming.com/hi-lo?currency=USD&operator=demo&jurisdiction=CW&lang=EN&return_url=https:%2F%2Fspribe.co%2Fgames&user=41252&token=1GmUbXboehDv6lYllHy8QAppKTnSJcR5",
-  },
-  {
-    name: "Mines",
-    src: iconMines,
-    href: "https://turbo.spribegaming.com/mines?currency=USD&operator=demo&jurisdiction=CW&lang=EN&return_url=https:%2F%2Fspribe.co%2Fgames&user=41252&token=1GmUbXboehDv6lYllHy8QAppKTnSJcR5",
-  },
-  {
-    name: "Keno",
-    src: iconKeno,
-    href: "https://turbo.spribegaming.com/keno?currency=USD&operator=demo&jurisdiction=CW&lang=EN&return_url=https:%2F%2Fspribe.co%2Fgames&user=41252&token=1GmUbXboehDv6lYllHy8QAppKTnSJcR5",
-  },
+  { name: "Dice", src: iconDice, route: "/games/dice" },
+  { name: "Plinko", src: iconPlinko, route: "/games/plinko" },
+  { name: "Goal", src: iconGoal, route: "/games/goal" },
+  { name: "Hi-Lo", src: iconHiLo, route: "/games/hi-lo" },
+  { name: "Mines", src: iconMines, route: "/games/mines" },
+  { name: "Keno", src: iconKeno, route: "/games/keno" },
   {
     name: "Mini Roulette",
     src: iconMiniRoulette,
-    href: "https://turbo.spribegaming.com/mini-roulette?currency=USD&operator=demo&jurisdiction=CW&lang=EN&return_url=https:%2F%2Fspribe.co%2Fgames&user=41252&token=1GmUbXboehDv6lYllHy8QAppKTnSJcR5",
+    route: "/games/mini-roulette",
   },
-  {
-    name: "Hotline",
-    src: iconHotline,
-    href: "https://turbo.spribegaming.com/hotline?currency=USD&operator=demo&jurisdiction=CW&lang=EN&return_url=https:%2F%2Fspribe.co%2Fgames&user=41252&token=1GmUbXboehDv6lYllHy8QAppKTnSJcR5",
-  },
-  {
-    name: "Balloon",
-    src: iconBalloon,
-    href: "https://turbo.spribegaming.com/balloon?currency=USD&operator=demo&jurisdiction=CW&lang=EN&return_url=https:%2F%2Fspribe.co%2Fgames&user=41252&token=1GmUbXboehDv6lYllHy8QAppKTnSJcR5",
-  },
+  { name: "Hotline", src: iconHotline, route: "/games/hotline" },
+  { name: "Balloon", src: iconBalloon, route: "/games/balloon" },
 ];
 </script>
+
+<style scoped>
+/* Add any additional styling if needed */
+</style>
