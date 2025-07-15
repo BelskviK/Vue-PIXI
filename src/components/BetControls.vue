@@ -104,9 +104,11 @@ function onBetClick() {
         @decrease="decrease"
         :classes="theme.btn"
       />
-      <BetAuto :active="isAuto" @toggle="toggleAuto" />
-      <!-- now driven by each game’s store -->
-      <BetButton :status="status" @bet="onBetClick" />
+      <div class="flex flex-row justify-between w-[300px]">
+        <BetAuto :active="isAuto" @toggle="toggleAuto" />
+        <!-- now driven by each game’s store -->
+        <BetButton :status="status" @bet="onBetClick" />
+      </div>
     </div>
   </div>
 </template>

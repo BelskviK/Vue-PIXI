@@ -1,5 +1,9 @@
 <template>
-  <button @click="handleClick" :class="buttonClasses">
+  <button
+    @click="handleClick"
+    class="w-full max-w-[50px] h-[50px] mr-4 rounded-full"
+    :class="buttonClasses"
+  >
     <!-- show the countdown when in countdown mode -->
     <span v-if="mode === 'countdown'" class="text-white font-semibold text-lg">
       {{ countdown }}
@@ -9,7 +13,7 @@
       v-else
       :src="iconAutoPlay"
       alt="Auto Play Icon"
-      class="w-7 h-7 flex-shrink-0"
+      class="w-6 h-6 flex-shrink-0"
     />
   </button>
 </template>

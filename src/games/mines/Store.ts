@@ -11,6 +11,7 @@ export const useMinesStore = defineStore("mines", {
   state: () => ({
     status: "betActive" as ButtonStatus,
     betValue: 0.1, // default starting bet value
+    cashOut: 0.8, // new cashOut value
   }),
   actions: {
     handleClick() {
@@ -18,14 +19,24 @@ export const useMinesStore = defineStore("mines", {
       if (this.status === "betActive") {
         this.status = "betInactive";
         setTimeout(() => {
+          // switch to cashout and record current bet value
+          this.cashOut = this.betValue;
           this.status = "cashoutActive";
-          console.log("[Store] switched to cashoutActive");
+          console.log(
+            "[Store] switched to cashoutActive, cashOut =",
+            this.cashOut
+          );
         }, 2000);
       } else if (this.status === "cashoutActive") {
         this.status = "cashoutInactive";
         setTimeout(() => {
+          // reset cashOut when going back to bet
+          this.cashOut = 0;
           this.status = "betActive";
-          console.log("[Store] switched to betActive");
+          console.log(
+            "[Store] switched to betActive, cashOut reset to",
+            this.cashOut
+          );
         }, 2000);
       }
     },

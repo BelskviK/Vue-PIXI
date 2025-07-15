@@ -1,24 +1,33 @@
 <template>
   <div class="flex flex-col h-screen" :style="{ backgroundColor: pageBg }">
-    <div class="flex-1 flex items-center justify-center">
-      <div :class="config.wrapperBaseClasses" :style="wrapperStyle">
+    <div class="flex items-center justify-center h-full w-full">
+      <div
+        class="relative flex flex-col w-full max-w-[970px] mx-2 h-full md:max-h-[540px] overflow-hidden rounded-xl border-0 md:border-2 md:border-solid"
+        :style="[wrapperStyle, { borderColor: config.theme.border }]"
+      >
+        <!-- Header: bottom on small screens, top on md+ -->
         <Header
           :key="gameId"
           :theme="config.theme"
           :classes="config.betsClasses"
+          class="order-last md:order-first md:h-[32px] h-[34px]"
         />
 
+        <!-- Game content stays in middle -->
         <Suspense>
           <template #default>
-            <component :is="GameComponent" />
+            <component :is="GameComponent" class="order-1" />
           </template>
           <template #fallback>
-            <div class="text-white flex items-center justify-center h-full">
+            <div
+              class="text-white flex items-center justify-center h-full order-1"
+            >
               Loading game…
             </div>
           </template>
         </Suspense>
 
+        <!-- BetsControl: above header on small, below game on md+ -->
         <BetsControl
           v-if="config.betsControlProps.showControls !== false"
           :key="gameId"
@@ -29,6 +38,7 @@
             layoutgradientTo: config.theme.layoutgradientTo,
             btn: config.theme.btn,
           }"
+          class="order-1 md:order-last md:h-[70px] h-[145px]"
         />
       </div>
     </div>
@@ -58,7 +68,6 @@ const wrapperStyle = computed(() => ({
     ${config.value.theme.gradientFrom},
     ${config.value.theme.gradientTo}
   )`,
-  border: `2px solid ${config.value.theme.border}`,
 }));
 
 const pageBg = computed(() => config.value.theme.bg);

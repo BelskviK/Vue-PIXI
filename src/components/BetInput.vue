@@ -2,24 +2,27 @@
   <div class="relative">
     <!-- Main BetInput component -->
     <div
-      class="flex items-center justify-between rounded-full px-4 py-2 w-[375px] border shadow-[2px_2px_0_rgba(0,0,0,0.6),inset_2px_2px_0_rgba(255,255,255,0.2)]"
+      class="flex items-center justify-between w-[300px] h-[50px] border border-[rgba(0,0,0,0.53)] rounded-[30px] shadow-[inset_1px_1px_#fff1cd33] px-3"
       :style="{ backgroundColor: classes }"
     >
-      <!-- both children split 53% / 47% -->
-      <span class="flex flex-col items-center w-[53%] relative">
-        <p class="text-sm text-white font-semibold">Bet USD</p>
-        <input
-          type="text"
-          :value="inputValue"
-          @click.stop="openNumPad"
-          class="bg-[#014873] rounded-full border-[1px] border-black text-white text-center font-bold w-full cursor-pointer"
-          readonly
-        />
+      <span class="flex flex-col items-start w-full relative">
+        <div
+          class="flex flex-col items-center justify-center text-[12px] w-full py-8"
+        >
+          <p class="text-white text-center font-semibold">Bet USD</p>
+          <input
+            type="text"
+            :value="inputValue"
+            @click.stop="openNumPad"
+            class="bg-[#014873] rounded-full border-[1px] border-black text-white text-center font-bold cursor-pointer w-full"
+            readonly
+          />
+        </div>
         <!-- Number pad dropdown -->
         <div
           v-if="numPadOpen"
           ref="numPad"
-          class="absolute -top-[265px] left-1/2 transform -translate-x-1/2 w-[300px] [#2d7194] rounded-2xl p-4 z-20 border"
+          class="absolute -top-[265px] left-1/2 transform -translate-x-1/2 w-[300px] bg-[#2d7194] rounded-2xl p-4 z-20 border"
           :style="{ backgroundColor: classes }"
         >
           <div class="grid grid-cols-3 gap-1 mb-1">
@@ -47,26 +50,24 @@
       </span>
 
       <!-- +/- and preset dropdown trigger -->
-      <div
-        class="flex flex-col items-end w-[47%] bg-blue-900 rounded-full py-1"
-      >
+      <div class="flex flex-col w-full bg-blue-900 rounded-full py-1 items-end">
         <div class="flex items-center">
           <button
             @click="decrease"
-            class="bg-blue-900 hover:bg-[#025580] transition-colors duration-150 text-white text-lg leading-none focus:outline-none active:translate-y-[2px] border-[1px] border-black rounded-full w-11 h-11 shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
+            class="bg-blue-900 hover:bg-[#025580] transition-colors duration-150 text-white text-lg leading-none focus:outline-none active:translate-y-[2px] border-[1px] border-black rounded-full w-[36px] h-[32px] shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
           >
             &minus;
           </button>
           <span
             ref="toggleBtn"
             @click.stop="toggleDropdown"
-            class="flex items-center justify-center mx-2 text-white font-medium border-[1px] border-black rounded-full w-11 h-11 active:translate-y-[2px] shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)] cursor-pointer"
+            class="flex items-center justify-center mx-2 text-white font-medium border-[1px] border-black rounded-full w-[38px] h-[36px] active:translate-y-[2px] shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)] cursor-pointer"
           >
             <img :src="iconBetVariant" alt="" class="w-5 h-5" />
           </span>
           <button
             @click="increase"
-            class="bg-blue-900 hover:bg-[#025580] transition-colors duration-150 text-white text-lg leading-none focus:outline-none active:translate-y-[2px] border-[1px] border-black rounded-full w-11 h-11 shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
+            class="bg-blue-900 hover:bg-[#025580] transition-colors duration-150 text-white text-lg leading-none focus:outline-none active:translate-y-[2px] border-[1px] border-black rounded-full w-[36px] h-[32px] shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
           >
             &plus;
           </button>
@@ -81,7 +82,7 @@
       class="absolute bottom-full left-0 w-[375px] bg-[#032e49] rounded-xl p-4 z-10"
     >
       <p
-        class="text-center text-white text-lg opacity-80 font-semibold -mt-2 mb-1"
+        class="text-center text-white text-[12px] opacity-80 font-semibold -mt-2 mb-1"
       >
         Bet USD
       </p>
@@ -190,7 +191,6 @@ function confirmInput() {
 
 function setBet(amountStr: string) {
   const amount = parseFloat(amountStr);
-  // if requested > balance, cap at balance
   const cap = parseFloat(userStore.balance.toFixed(2));
   const final = amount > cap ? cap : amount;
   store.setBetValue(final);
