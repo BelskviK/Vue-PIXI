@@ -34,7 +34,7 @@
           :classes="config.betsClasses"
           v-bind="config.betsControlProps"
           :theme="{ btn: config.theme.btn }"
-          class="order-1 md:order-last md:h-[70px] h-[145px]"
+          class="order-1 md:order-last md:h-[70px] h-[145px] mb-1 md:mb-0"
         />
       </div>
     </div>

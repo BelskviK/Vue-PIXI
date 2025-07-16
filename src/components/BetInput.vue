@@ -4,7 +4,7 @@
     <div
       class="flex items-center justify-between w-[300px] h-[50px] border border-[rgba(0,0,0,0.53)] rounded-[30px] shadow-[inset_1px_1px_#fff1cd33] px-3"
     >
-      <span class="flex flex-col items-start w-full relative">
+      <span class="flex flex-col items-start w-full sm:relative static">
         <div
           class="flex flex-col items-center justify-center text-[12px] w-full"
         >

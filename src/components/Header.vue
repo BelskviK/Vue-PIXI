@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative w-full h-9 flex items-center px-4 shadow-md rounded-2xl text-white py-4 bg-black/30"
+    class="relative w-full h-9 flex items-center px-4 shadow-md rounded-2xl text-white py-4 md:bg-black/30 bg-black/0"
   >
     <div class="flex items-center w-[50%] space-x-4">
       <!-- game selector button -->
@@ -73,7 +73,7 @@
     <!-- Dropdown menu -->
     <div
       v-if="dropdownOpen"
-      class="absolute top-full left-1 grid grid-cols-4 gap-1 bg-[#212226] p-4 z-50 rounded-lg"
+      class="absolute md:top-full top-[-650%] left-1 grid grid-cols-4 gap-1 bg-[#212226] p-4 z-50 rounded-lg"
     >
       <div
         v-for="game in gameIcons"

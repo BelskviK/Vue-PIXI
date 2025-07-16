@@ -31,7 +31,7 @@
       <template v-if="props.status.includes('cashout')">
         <span class="text-white font-semibold text-[16px] -mb-2">CASH OUT</span>
         <div
-          class="bg-[rgba(0,0,0,0.41)] text-white font-semibold text-[12px] text-center px-2 rounded h-4 mt-1 leading-[1]"
+          class="bg-[rgba(0,0,0,0.41)] text-white font-semibold text-[12px] text-center px-2 rounded h-4 mt-1 leading-[1.5]"
         >
           {{ formattedCashOutValue }} USD
         </div>
