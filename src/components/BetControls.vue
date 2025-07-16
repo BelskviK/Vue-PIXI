@@ -1,15 +1,15 @@
 <!-- src/components/BetControls.vue -->
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useDiceStore } from "@/games/dice/Store";
-import { usePlinkoStore } from "@/games/plinko/Store";
-import { useMinesStore } from "@/games/mines/Store";
-import { useGoalStore } from "@/games/goal/Store";
-import { useHiloStore } from "@/games/hilo/Store";
-import { useKenoStore } from "@/games/keno/Store";
-import { useMiniRouletteStore } from "@/games/mini-roulette/Store";
-import { useHotlineStore } from "@/games/hotline/Store";
-import { useBalloonStore } from "@/games/balloon/Store";
+import { useDiceStore } from "@/components/games/dice/Store";
+import { usePlinkoStore } from "@/components/games/plinko/Store";
+import { useMinesStore } from "@/components/games/mines/Store";
+import { useGoalStore } from "@/components/games/goal/Store";
+import { useHiloStore } from "@/components/games/hilo/Store";
+import { useKenoStore } from "@/components/games/keno/Store";
+import { useMiniRouletteStore } from "@/components/games/mini-roulette/Store";
+import { useHotlineStore } from "@/components/games/hotline/Store";
+import { useBalloonStore } from "@/components/games/balloon/Store";
 
 import BetAuto from "@/components/BetAuto.vue";
 import BetButton from "@/components/BetButton.vue";

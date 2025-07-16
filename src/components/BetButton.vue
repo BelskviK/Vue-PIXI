@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useMinesStore } from "@/games/mines/Store";
+import { useMinesStore } from "@/components/games/mines/Store";
 import iconBet from "@/assets/icon-bet.svg";
 
 const props = defineProps<{
