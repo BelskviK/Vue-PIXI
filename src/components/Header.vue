@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="dropdownRef"
     class="relative w-full h-9 flex items-center px-4 shadow-md rounded-2xl text-white py-4 md:bg-black/30 bg-black/0"
   >
     <div class="flex items-center w-[50%] space-x-4">
@@ -38,9 +39,9 @@
           alt=""
           class="w-[16px] h-[16px] mx-1 md:mr-1 filter brightness-0"
         />
-        <span class="hidden md:flex flex-1 text-center truncate"
-          >HOW TO PLAY?</span
-        >
+        <span class="hidden md:flex flex-1 text-center truncate">
+          HOW TO PLAY?
+        </span>
       </button>
     </div>
 
@@ -91,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
@@ -107,6 +108,12 @@ import iconMiniRoulette from "@/assets/gameIcons/icon-mini-roulette.svg";
 import iconPlinko from "@/assets/gameIcons/icon-plinko.svg";
 import howTo from "@/assets/icon-how-to-play.svg";
 
+interface GameType {
+  name: string;
+  src: string;
+  routeName: string;
+}
+
 const props = defineProps<{
   theme: {
     btn: string;
@@ -114,16 +121,10 @@ const props = defineProps<{
 }>();
 const { theme } = props;
 
-// reactive header background gradient
-
 const router = useRouter();
 const dropdownOpen = ref(false);
+const dropdownRef = ref<HTMLElement | null>(null);
 
-interface GameType {
-  name: string;
-  src: string;
-  routeName: string;
-}
 const selectedGame = ref<GameType>({
   name: "Mines",
   src: iconMines,
@@ -147,8 +148,28 @@ const { balance } = storeToRefs(userStore);
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value;
 }
+
+function handleClickOutside(event: MouseEvent) {
+  if (
+    dropdownOpen.value &&
+    dropdownRef.value &&
+    !dropdownRef.value.contains(event.target as Node)
+  ) {
+    dropdownOpen.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
+
 function openHowToPlayModal() {}
 function openMenu() {}
+
 function onSelectGame(game: GameType) {
   selectedGame.value = game;
   dropdownOpen.value = false;
