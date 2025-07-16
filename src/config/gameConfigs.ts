@@ -118,7 +118,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     },
   },
 
-  miniRoulette: {
+  miniroulette: {
     component: () => import("@/pages/games/mini-roulette/index.vue"),
     wrapperBaseClasses:
       "relative flex flex-col w-[56%] h-[57%] overflow-hidden rounded-xl",
@@ -129,7 +129,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     },
     betsClasses: "bg-gradient-to-r from-emerald-500 to-emerald-700",
     betsControlProps: {
-      panelType: "miniRoulette",
+      panelType: "miniroulette",
       showControls: true,
     },
   },

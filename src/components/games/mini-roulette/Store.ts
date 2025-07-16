@@ -7,7 +7,7 @@ export type ButtonStatus =
   | "cashoutActive"
   | "cashoutInactive";
 
-export const useMiniRouletteStore = defineStore("miniRoulette", {
+export const useMiniRouletteStore = defineStore("miniroulette", {
   state: () => ({
     status: "betActive" as ButtonStatus,
   }),

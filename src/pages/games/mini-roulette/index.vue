@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-const gameName = "mini-roulete";
+const gameName = "miniroulette";
 </script>
 
 <style scoped>

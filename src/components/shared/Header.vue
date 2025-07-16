@@ -137,7 +137,7 @@ const gameIcons: GameType[] = [
   { name: "Hi-Lo", src: iconHiLo, routeName: "HiLo" },
   { name: "Mines", src: iconMines, routeName: "Mines" },
   { name: "Keno", src: iconKeno, routeName: "Keno" },
-  { name: "Mini Roulette", src: iconMiniRoulette, routeName: "MiniRoulette" },
+  { name: "Mini Roulette", src: iconMiniRoulette, routeName: "miniroulette" },
   { name: "Hotline", src: iconHotline, routeName: "Hotline" },
   { name: "Balloon", src: iconBalloon, routeName: "Balloon" },
 ];

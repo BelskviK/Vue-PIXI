@@ -35,7 +35,7 @@ const gameStores: Record<string, any> = {
   goal: useGoalStore(),
   hilo: useHiloStore(),
   keno: useKenoStore(),
-  miniRoulette: useMiniRouletteStore(),
+  miniroulette: useMiniRouletteStore(),
   hotline: useHotlineStore(),
   balloon: useBalloonStore(),
 };
