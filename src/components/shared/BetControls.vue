@@ -11,9 +11,9 @@ import { useMiniRouletteStore } from "@/components/games/mini-roulette/Store";
 import { useHotlineStore } from "@/components/games/hotline/Store";
 import { useBalloonStore } from "@/components/games/balloon/Store";
 
-import BetAuto from "@/components/BetAuto.vue";
-import BetButton from "@/components/BetButton.vue";
-import BetInput from "@/components/BetInput.vue";
+import BetAuto from "@/components/shared/BetAuto.vue";
+import BetButton from "@/components/shared/BetButton.vue";
+import BetInput from "@/components/shared/BetInput.vue";
 
 // Props from GameView
 const props = defineProps<{
