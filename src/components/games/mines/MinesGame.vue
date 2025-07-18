@@ -1,11 +1,11 @@
 <template>
   <div
-    class="flex flex-col items-center justify-between h-[72%] md:h-[100%] w-full max-w-[400px] pb-0 pt-2 md:pb-2 md:pt-1 px-1"
+    class="flex flex-col items-center justify-between h-full w-full max-w-[400px] pb-40 pt-2 md:pb-2 md:pt-1 px-1"
   >
     <MinesHeader />
 
     <!-- now just drop in our new board -->
-    <MinesBoard :rows="5" :cols="5" />
+    <MinesBoard :rows="5" :cols="5" class="w-full px-1 py-2" />
 
     <MinesFooter />
   </div>

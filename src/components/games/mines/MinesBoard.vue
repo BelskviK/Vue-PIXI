@@ -1,6 +1,6 @@
 <template>
   <!-- fluid up to 320px, then scale down to parent width -->
-  <div ref="container" class="w-full px-1"></div>
+  <div ref="container"></div>
 </template>
 
 <script setup lang="ts">
