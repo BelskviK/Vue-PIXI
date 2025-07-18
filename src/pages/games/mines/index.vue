@@ -16,7 +16,9 @@
     />
 
     <!-- Actual Mines game component -->
-    <div class="z-1 w-full h-full flex items-center justify-center">
+    <div
+      class="w-full h-[100%] flex flex-col items-center align-center justify-between"
+    >
       <MinesGame />
     </div>
   </div>

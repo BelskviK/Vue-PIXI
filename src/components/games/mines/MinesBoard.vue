@@ -1,6 +1,6 @@
 <template>
-  <!-- Fixed 320px container for crisp rendering, maintaining 415:320 aspect ratio -->
-  <div ref="container" class="w-[320px]" style="aspect-ratio: 415/320"></div>
+  <!-- fluid up to 320px, then scale down to parent width -->
+  <div ref="container" class="w-full px-1"></div>
 </template>
 
 <script setup lang="ts">
@@ -30,12 +30,10 @@ onMounted(async () => {
   app = new Application();
 
   if (container.value) {
-    // CSS container dimensions
     const cssWidth = container.value.clientWidth;
     const cssHeight = (DESIGN_HEIGHT / DESIGN_WIDTH) * cssWidth;
     const resolution = window.devicePixelRatio || 1;
 
-    // initialize Pixi at CSS size, let resolution handle crispness
     await app.init({
       width: cssWidth,
       height: cssHeight,
@@ -45,17 +43,14 @@ onMounted(async () => {
     });
 
     container.value.appendChild(app.canvas);
-
-    // initial draw in logical (CSS) space
     drawGrid(cssWidth, cssHeight);
 
-    // handle resizing
     resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const newCssW = entry.contentRect.width;
-        const newCssH = (DESIGN_HEIGHT / DESIGN_WIDTH) * newCssW;
-        app.renderer.resize(newCssW, newCssH);
-        drawGrid(newCssW, newCssH);
+        const newW = entry.contentRect.width;
+        const newH = (DESIGN_HEIGHT / DESIGN_WIDTH) * newW;
+        app.renderer.resize(newW, newH);
+        drawGrid(newW, newH);
       }
     });
     resizeObserver.observe(container.value);
@@ -81,10 +76,6 @@ watch(
   }
 );
 
-/**
- * Draws the grid of tiles to fit within [width]×[height] logical pixels.
- * Uses CSS coordinates so all tiles are visible. High-DPI handled by resolution.
- */
 function drawGrid(width: number, height: number) {
   const {
     rows,
@@ -96,11 +87,8 @@ function drawGrid(width: number, height: number) {
     dotColor = 0x2a4b8c,
   } = props;
 
-  // total grid size in logical pixels
   const intrinsicW = cols * tileWidth + (cols - 1) * padding;
   const intrinsicH = rows * tileHeight + (rows - 1) * padding;
-
-  // scale factor to fit container
   const scale = Math.min(width / intrinsicW, height / intrinsicH);
 
   const scaledTileW = tileWidth * scale;
@@ -109,7 +97,6 @@ function drawGrid(width: number, height: number) {
   const cornerRadius = 8 * scale;
   const borderWidth = Math.max(1, Math.round(scale));
 
-  // compute centering offsets
   const totalW = intrinsicW * scale;
   const totalH = intrinsicH * scale;
   const startX = (width - totalW) / 2;
@@ -122,9 +109,7 @@ function drawGrid(width: number, height: number) {
       const xPos = startX + col * (scaledTileW + scaledPadding);
       const yPos = startY + row * (scaledTileH + scaledPadding);
 
-      // simple 1px black shadow via offset rectangle
-      const shadow = new Graphics();
-      shadow
+      const shadow = new Graphics()
         .beginFill(0x000000)
         .drawRoundedRect(0, 0, scaledTileW, scaledTileH, cornerRadius)
         .endFill();
@@ -132,7 +117,6 @@ function drawGrid(width: number, height: number) {
       shadow.y = yPos + 1;
       app.stage.addChild(shadow);
 
-      // tile border + fill
       const tile = new Graphics();
       tile.lineStyle(borderWidth, dotColor);
       tile
@@ -140,7 +124,6 @@ function drawGrid(width: number, height: number) {
         .drawRoundedRect(0, 0, scaledTileW, scaledTileH, cornerRadius)
         .endFill();
 
-      // center dot
       const dotRadius = Math.min(scaledTileW, scaledTileH) * 0.2;
       tile
         .beginFill(dotColor)
@@ -156,5 +139,5 @@ function drawGrid(width: number, height: number) {
 </script>
 
 <style scoped>
-/* fixed CSS width, high-DPI canvas inside */
+/* no change needed here */
 </style>

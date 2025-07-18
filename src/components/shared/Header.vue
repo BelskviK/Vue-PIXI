@@ -1,7 +1,7 @@
 <template>
   <div
     ref="dropdownRef"
-    class="relative w-full h-9 flex items-center px-4 shadow-md rounded-2xl text-white py-4 md:bg-black/30 bg-black/0"
+    class="relative w-full flex items-center px-4 shadow-md rounded-2xl text-white py-4 md:bg-black/30 bg-black/0"
   >
     <div class="flex items-center w-[50%] space-x-4">
       <!-- game selector button -->

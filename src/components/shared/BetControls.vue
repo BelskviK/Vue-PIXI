@@ -91,7 +91,7 @@ function onBetClick() {
     ]"
   >
     <div
-      class="w-full py-4 md:py-3 flex items-center justify-center flex-col-reverse md:flex-row gap-y-6 md:space-x-4 space-x-0 shadow-inner rounded-xl bg-black/30"
+      class="w-full py-4 md:py-3 flex items-center justify-center flex-col-reverse md:flex-row gap-y-5 md:space-x-4 space-x-0 shadow-inner rounded-xl bg-black/30"
     >
       <BetInput
         :value="betValue"

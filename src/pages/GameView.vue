@@ -5,23 +5,24 @@
         class="relative flex flex-col w-full max-w-[970px] mx-2 h-full md:max-h-[540px] overflow-hidden rounded-xl border-0 md:border-2 md:border-solid"
         :style="wrapperStyle"
       >
-        <!-- Header: bottom on small screens, top on md+ -->
+        <!-- Header: bottom on small screens, top on md+  h-[34px] ]-->
         <Header
           :key="gameId"
           :theme="config.theme"
           :classes="config.betsClasses"
-          class="order-last md:order-first md:h-[32px] h-[34px]"
+          class="absolute bottom-[0px] h-[34px] md:h-[32px] md:order-first md:top-0 order-last"
         />
 
         <!-- Game content stays in middle -->
         <Suspense>
           <template #default>
-            <component :is="GameComponent" class="order-1" />
+            <component
+              :is="GameComponent"
+              class="order-1 h-[calc(100%-202px)] md:h-[calc(100%-100px)]"
+            />
           </template>
           <template #fallback>
-            <div
-              class="text-white flex items-center justify-center h-full order-1"
-            >
+            <div class="text-white flex items-center justify-center order-1">
               Loading game…
             </div>
           </template>
@@ -34,7 +35,7 @@
           :classes="config.betsClasses"
           v-bind="config.betsControlProps"
           :theme="{ btn: config.theme.btn }"
-          class="order-1 md:order-last md:h-[70px] h-[145px] mb-1 md:mb-0"
+          class="absolute bottom-[34px] h-[145px] mb-1 md:bottom-0 md:h-[70px] md:mb-0 md:order-last order-1"
         />
       </div>
     </div>
