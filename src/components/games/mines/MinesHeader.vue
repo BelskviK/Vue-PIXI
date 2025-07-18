@@ -79,41 +79,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useMinesSettings } from "@/components/games/mines/settings";
+
+const settings = useMinesSettings();
 
 const isOpen = ref(false);
-const numbers = Array.from({ length: 20 }, (_, i) => i + 1);
-const minesCount = ref(3);
-const nextMultiplier = ref(1.1);
-const minesProgress = ref(0);
-
-const wrapper = ref<HTMLElement | null>(null);
+const numbers = Array.from({ length: 24 }, (_, i) => i + 1); // 1-24 bombs
+const minesCount = computed(() => settings.minesCount);
 
 function toggleDropdown() {
   isOpen.value = !isOpen.value;
 }
-
 function selectMines(n: number) {
-  minesCount.value = n;
+  settings.setMinesCount(n);
   isOpen.value = false;
 }
 
+/* --- outside-click helper (unchanged) --- */
+const wrapper = ref<HTMLElement | null>(null);
 function handleClickOutside(e: MouseEvent) {
-  if (wrapper.value && !wrapper.value.contains(e.target as Node)) {
+  if (wrapper.value && !wrapper.value.contains(e.target as Node))
     isOpen.value = false;
-  }
 }
-
 onMounted(() => document.addEventListener("click", handleClickOutside));
 onBeforeUnmount(() =>
   document.removeEventListener("click", handleClickOutside)
 );
 
-setInterval(() => {
-  if (minesProgress.value < 100) {
-    minesProgress.value += 5;
-  }
-}, 500);
+/* dummy multiplier / progress bar – kept to preserve existing UI */
+const nextMultiplier = ref(1.1);
+const minesProgress = ref(0);
+setInterval(
+  () => (minesProgress.value = Math.min(100, minesProgress.value + 5)),
+  500
+);
 </script>
 
 <style scoped></style>

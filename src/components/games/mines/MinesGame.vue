@@ -5,7 +5,7 @@
     <MinesHeader />
 
     <!-- now just drop in our new board -->
-    <MinesBoard :rows="5" :cols="5" class="w-full px-1 py-2" />
+    <MinesBoard :rows="5" :cols="5" class="w-full py-2" />
 
     <MinesFooter />
   </div>
