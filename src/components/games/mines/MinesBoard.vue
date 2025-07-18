@@ -2,9 +2,11 @@
 import { ref, onMounted, onUnmounted, watch, defineProps } from "vue";
 import { Application } from "pixi.js";
 import { Tile, TileType } from "./Tile";
+import { loadSvgMap } from "./svgAssets";
 import { MinesEngine } from "@/components/games/mines/Engine";
 import { useMinesSettings } from "@/components/games/mines/settings";
 
+/* props --------------------------------------------------- */
 interface Props {
   rows: number;
   cols: number;
@@ -14,42 +16,32 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-/* ------------------------------------------------------------------ */
-/*  PIXI application bootstrap                                        */
-/* ------------------------------------------------------------------ */
+/* PIXI bootstrap ----------------------------------------- */
 const container = ref<HTMLDivElement | null>(null);
 let app: Application;
 let resizeObserver: ResizeObserver;
 
-/* Tile bookkeeping */
+/* bookkeeping -------------------------------------------- */
 let engine: MinesEngine;
-const tiles = new Map<number, Tile>(); // index → Tile reference
+const tiles = new Map<number, Tile>();
 
-/* constants */
 const BASE_W = props.tileWidth ?? 64;
 const BASE_H = props.tileHeight ?? 48;
 const GAP = props.padding ?? 10;
 
-/* ------------------------------------------------------------------ */
-/*  Game creation / recreation                                        */
-/* ------------------------------------------------------------------ */
+/* helpers ------------------------------------------------- */
 const settings = useMinesSettings();
 function makeNewGame() {
   engine = new MinesEngine(props.rows, props.cols, settings.minesCount);
-  drawBoard(); // fresh board
+  drawBoard();
 }
 
-/* ------------------------------------------------------------------ */
-/*  PIXI rendering                                                    */
-/* ------------------------------------------------------------------ */
 function drawBoard() {
   if (!container.value) return;
 
-  /* === 1. clear stage & bookkeeping === */
   app.stage.removeChildren();
   tiles.clear();
 
-  /* === 2. compute scale to fit parent === */
   const cssW = container.value.clientWidth;
   const cssH = container.value.clientHeight;
   const boardW = props.cols * BASE_W + (props.cols - 1) * GAP;
@@ -58,83 +50,75 @@ function drawBoard() {
   const offX = (cssW - boardW * scale) / 2;
   const offY = (cssH - boardH * scale) / 2;
 
-  /* === 3. build tiles === */
   for (let r = 0; r < props.rows; r++) {
     for (let c = 0; c < props.cols; c++) {
-      const index = r * props.cols + c;
+      const idx = r * props.cols + c;
       const t = new Tile();
       t.scale.set(scale);
-      t.x = offX + c * (BASE_W + GAP) * scale;
-      t.y = offY + r * (BASE_H + GAP) * scale;
+      t.position.set(
+        offX + c * (BASE_W + GAP) * scale,
+        offY + r * (BASE_H + GAP) * scale
+      );
 
       t.eventMode = "static";
       t.cursor = "pointer";
-      t.on("pointertap", () => handleTileClick(index));
+      t.on("pointertap", () => handleTileClick(idx));
 
-      tiles.set(index, t);
+      tiles.set(idx, t);
       app.stage.addChild(t);
     }
   }
+
   app.renderer.resize(cssW, cssH);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Interaction & rules                                               */
-/* ------------------------------------------------------------------ */
-function handleTileClick(index: number) {
-  if (engine.exploded || engine.isRevealed(index)) return;
+function handleTileClick(idx: number) {
+  if (engine.exploded || engine.isRevealed(idx)) return;
 
-  const result = engine.reveal(index);
-  const tile = tiles.get(index)!;
+  const result = engine.reveal(idx);
+  const tile = tiles.get(idx)!;
 
-  if (result === "safe") {
-    tile.setKind(TileType.StarGold); // yellow star
-  } else if (result === "explosion") {
-    tile.setKind(TileType.Explosion); // red bomb
-    revealAll(); // end round
+  if (result === "safe") tile.setKind(TileType.StarGold);
+  else if (result === "explosion") {
+    tile.setKind(TileType.Explosion);
+    revealAll();
   }
 }
 
 function revealAll() {
-  const outcome = engine.revealAll();
-
-  outcome.forEach((state, idx) => {
+  engine.revealAll().forEach((state, idx) => {
     const t = tiles.get(idx)!;
-
     if (state === "bomb" && t.kind === TileType.Hidden)
-      t.revealFinal(TileType.Bomb, true); // black bomb, flip anim
-    else if (state === "hidden") t.revealFinal(TileType.StarBlue, true); // blue star, flip anim
+      t.revealFinal(TileType.Bomb);
+    else if (state === "hidden") t.revealFinal(TileType.StarBlue);
   });
 }
-
-/* ------------------------------------------------------------------ */
-/*  Lifecycle                                                         */
-/* ------------------------------------------------------------------ */
 onMounted(async () => {
+  /* 🚀 — 100 % more pixels */
   app = new Application();
-  await app.init({ backgroundAlpha: 0, autoDensity: true });
-  if (container.value) container.value.appendChild(app.canvas);
+  await app.init({
+    resolution: Math.ceil(window.devicePixelRatio * 2), // doubled DPI
+    backgroundAlpha: 0,
+    autoDensity: true, // ties logical & physical pixels
+    antialias: true,
+  });
+  container.value?.appendChild(app.canvas);
 
-  makeNewGame(); // first game
-
-  resizeObserver = new ResizeObserver(() => drawBoard());
+  makeNewGame();
+  resizeObserver = new ResizeObserver(drawBoard);
   resizeObserver.observe(container.value!);
 });
+
 onUnmounted(() => {
   resizeObserver?.disconnect();
   app.destroy({ removeView: true }, { children: true, texture: true });
 });
 
-/*  React to settings change (new round)  */
-watch(
-  () => settings.minesCount,
-  () => makeNewGame()
-);
+watch(() => settings.minesCount, makeNewGame);
 </script>
 
 <template>
-  <!-- fluid container – parent dictates size -->
-  <div ref="container" class="w-full h-[80%] select-none touch-none"></div>
+  <div ref="container" class="w-full h-[80%] select-none touch-none" />
 </template>
 
 <style scoped></style>

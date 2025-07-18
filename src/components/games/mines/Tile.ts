@@ -140,14 +140,11 @@ export class Tile extends Container {
       .fill({ fill: grad });
 
     // Border
-    this.border
-      .clear()
-      .roundRect(0, 0, this.w, this.h, this.r)
-      .stroke({
-        width: this.borderW,
-        color: BORDER_COLOR,
-        alpha: BORDER_ALPHA,
-      });
+    this.border.clear().roundRect(0, 0, this.w, this.h, this.r).stroke({
+      width: this.borderW,
+      color: BORDER_COLOR,
+      alpha: BORDER_ALPHA,
+    });
 
     // Icon / dot
     this.icon.clear();
