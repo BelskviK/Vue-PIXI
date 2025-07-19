@@ -7,7 +7,12 @@ export const useMinesRound = defineStore("minesRound", {
   state: () => ({
     totalTiles: 0,
     revealedTiles: 0,
-    preselectedTiles: 0, // ← NEW
+    preselectedTiles: 0,
+
+    /* multipliers kept in-store so the whole app sees the same values */
+    currentMultiplier: 0, // for cash-out
+    nextMultiplier: 0, // preview shown in UI
+
     finished: false,
   }),
 
@@ -25,16 +30,22 @@ export const useMinesRound = defineStore("minesRound", {
       this.totalTiles = r * c;
       this.revealedTiles = 0;
       this.preselectedTiles = 0;
+      this.currentMultiplier = 0;
+      this.nextMultiplier = 0;
       this.finished = false;
     },
     revealOne() {
       this.revealedTiles++;
     },
-    /** called by board while user is choosing green tiles */
+    /** while user is selecting green tiles (Auto mode before betting) */
     setPreselected(n: number) {
       this.preselectedTiles = n;
     },
-    /** mark round ended (explosion OR manual cash-out) */
+    /** board sends both multipliers */
+    setMultipliers(cur: number, nxt: number) {
+      this.currentMultiplier = cur;
+      this.nextMultiplier = nxt;
+    },
     revealAll() {
       this.revealedTiles = this.totalTiles;
       this.preselectedTiles = 0;
@@ -44,6 +55,8 @@ export const useMinesRound = defineStore("minesRound", {
       this.totalTiles = 0;
       this.revealedTiles = 0;
       this.preselectedTiles = 0;
+      this.currentMultiplier = 0;
+      this.nextMultiplier = 0;
       this.finished = false;
     },
   },
