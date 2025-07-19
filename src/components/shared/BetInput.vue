@@ -4,6 +4,7 @@
     <div
       class="flex items-center justify-between w-[300px] h-[50px] border border-[rgba(0,0,0,0.53)] rounded-[30px] shadow-[inset_1px_1px_#fff1cd33] px-3"
     >
+      <!-- text + readonly input (opens num-pad) -->
       <span class="flex flex-col items-start w-full sm:relative static">
         <div
           class="flex flex-col items-center justify-center text-[12px] w-full"
@@ -17,11 +18,12 @@
             readonly
           />
         </div>
-        <!-- Number pad dropdown -->
+
+        <!-- pop-up num-pad -->
         <div
           v-if="numPadOpen"
           ref="numPad"
-          class="absolute -top-[265px] left-1/2 transform -translate-x-1/2 w-[300px] bg-[#2d7194] rounded-2xl p-4 z-20 border"
+          class="absolute -top-[265px] left-1/2 transform -translate-x-1/2 w-[300px] rounded-2xl p-4 z-20 border"
           :style="{ backgroundColor: classes }"
         >
           <div class="grid grid-cols-3 gap-1 mb-1">
@@ -30,7 +32,7 @@
               :key="key"
               @mousedown.prevent
               @click="pressKey(key)"
-              class="text-white rounded-lg shadow-[1px_1px_1px_rgba(0,0,0,0.4),inset_1px_1px_0_rgba(255,255,255,0.2)] py-1 text-2xl font-semibold active:translate-y-[2px] border-black filter hover:brightness-90 transition-[filter] duration-150"
+              class="text-white rounded-lg py-1 text-2xl font-semibold active:translate-y-[2px] border-black shadow-[1px_1px_1px_rgba(0,0,0,0.4),inset_1px_1px_0_rgba(255,255,255,0.2)] filter hover:brightness-90 transition duration-150"
               :style="{ backgroundColor: classes }"
             >
               <template v-if="key === 'back'">⌫</template>
@@ -48,25 +50,27 @@
         </div>
       </span>
 
-      <!-- +/- and preset dropdown trigger -->
+      <!-- +/- and preset trigger -->
       <div class="flex flex-col w-full bg-blue-900 rounded-full py-1 items-end">
         <div class="flex items-center">
           <button
             @click="decrease"
-            class="bg-blue-900 hover:bg-[#025580] transition-colors duration-150 text-white text-lg leading-none focus:outline-none active:translate-y-[2px] border-[1px] border-black rounded-full w-[36px] h-[32px] shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
+            class="bg-blue-900 hover:bg-[#025580] text-white text-lg rounded-full w-[36px] h-[32px] active:translate-y-[2px] border border-black shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
           >
             &minus;
           </button>
+
           <span
             ref="toggleBtn"
             @click.stop="toggleDropdown"
-            class="flex items-center justify-center mx-2 text-white font-medium border-[1px] border-black rounded-full w-[38px] h-[36px] active:translate-y-[2px] shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)] cursor-pointer"
+            class="flex items-center justify-center mx-2 text-white font-medium border border-black rounded-full w-[38px] h-[36px] active:translate-y-[2px] shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)] cursor-pointer"
           >
             <img :src="iconBetVariant" alt="" class="w-5 h-5" />
           </span>
+
           <button
             @click="increase"
-            class="bg-blue-900 hover:bg-[#025580] transition-colors duration-150 text-white text-lg leading-none focus:outline-none active:translate-y-[2px] border-[1px] border-black rounded-full w-[36px] h-[32px] shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
+            class="bg-blue-900 hover:bg-[#025580] text-white text-lg rounded-full w-[36px] h-[32px] active:translate-y-[2px] border border-black shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
           >
             &plus;
           </button>
@@ -74,7 +78,7 @@
       </div>
     </div>
 
-    <!-- Preset dropdown menu -->
+    <!-- preset amounts dropdown -->
     <div
       v-if="isOpen"
       ref="dropdown"
@@ -93,8 +97,8 @@
           :class="[
             'rounded-full border border-black py-1 text-center font-medium active:translate-y-[2px] text-xs',
             selectedAmount === amount
-              ? 'bg-[#2f82b5] text-white'
-              : 'bg-[#094164] text-white hover:bg-[#0b5679]',
+              ? 'bg-[#2f82b5]'
+              : 'bg-[#094164] hover:bg-[#0b5679]',
           ]"
         >
           {{ amount }}
@@ -107,7 +111,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useMinesStore } from "@/components/games/mines/Store";
-import { useUserStore } from "@/stores/user";
 import iconBetVariant from "@/assets/icon-bet-variant.svg";
 import iconTick from "@/assets/icon-calculator-tick.svg";
 
@@ -117,12 +120,13 @@ const props = withDefaults(defineProps<{ classes?: string }>(), {
 const { classes } = props;
 
 const store = useMinesStore();
-const userStore = useUserStore();
 
 const isOpen = ref(false);
 const numPadOpen = ref(false);
 const inputValue = ref(store.betValue.toFixed(2));
 const selectedAmount = ref(store.betValue.toFixed(2));
+
+/* ─── presets & keypad ─── */
 const amounts = [
   "0.10",
   "0.20",
@@ -146,78 +150,73 @@ const toggleBtn = ref<HTMLElement | null>(null);
 const dropdown = ref<HTMLElement | null>(null);
 const numPad = ref<HTMLElement | null>(null);
 
+/* ─── UI helpers ─── */
 function toggleDropdown() {
   isOpen.value = !isOpen.value;
   if (isOpen.value) numPadOpen.value = false;
 }
-
 function openNumPad() {
   numPadOpen.value = true;
   inputValue.value = "";
   isOpen.value = false;
 }
-
 function closeAll() {
   isOpen.value = false;
   numPadOpen.value = false;
 }
 
-function selectAmount(amount: string) {
-  setBet(amount);
+function selectAmount(a: string) {
+  setBet(a);
 }
-
 function increase() {
   setBet((store.betValue + 0.1).toFixed(2));
 }
-
 function decrease() {
   const next = store.betValue - 0.1;
   setBet((next >= 0.1 ? next : store.betValue).toFixed(2));
 }
 
-function pressKey(key: string) {
-  if (key === "back") inputValue.value = inputValue.value.slice(0, -1);
-  else if (key === "." && inputValue.value.includes(".")) return;
-  else inputValue.value += key;
+function pressKey(k: string) {
+  if (k === "back") inputValue.value = inputValue.value.slice(0, -1);
+  else if (k === "." && inputValue.value.includes(".")) return;
+  else inputValue.value += k;
 }
-
 function confirmInput() {
-  let val = parseFloat(inputValue.value);
-  if (isNaN(val) || val === 0) val = 0.1;
-  setBet(val.toFixed(2));
+  let v = parseFloat(inputValue.value);
+  if (isNaN(v) || v === 0) v = 0.1;
+  setBet(v.toFixed(2));
   closeAll();
 }
 
+/* ─── core setter (delegates capping to store) ─── */
 function setBet(amountStr: string) {
-  const amount = parseFloat(amountStr);
-  const cap = parseFloat(userStore.balance.toFixed(2));
-  const final = amount > cap ? cap : amount;
-  store.setBetValue(final);
-  inputValue.value = final.toFixed(2);
-  selectedAmount.value = final.toFixed(2);
+  const num = parseFloat(amountStr);
+  store.setBetValue(num);
+  inputValue.value = store.betValue.toFixed(2);
+  selectedAmount.value = inputValue.value;
 }
 
+/* ─── outside click ─── */
 function handleClickOutside(e: MouseEvent) {
   const t = e.target as Node;
   if (
     !dropdown.value?.contains(t) &&
     !toggleBtn.value?.contains(t) &&
     !numPad.value?.contains(t)
-  ) {
+  )
     closeAll();
-  }
 }
-
 onMounted(() => document.addEventListener("click", handleClickOutside));
 onBeforeUnmount(() =>
   document.removeEventListener("click", handleClickOutside)
 );
 
+/* ─── sync when store.betValue changes elsewhere ─── */
 watch(
   () => store.betValue,
-  (val) => {
-    inputValue.value = val.toFixed(2);
-    selectedAmount.value = val.toFixed(2);
+  (v) => {
+    inputValue.value = v.toFixed(2);
+    selectedAmount.value = inputValue.value;
   }
 );
 </script>

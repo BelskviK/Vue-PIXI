@@ -1,35 +1,63 @@
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/user";
 
-export type ButtonStatus = "betActive" | "cashoutInactive";
+export type ButtonStatus = "betActive" | "cashoutInactive" | "cashoutActive";
 
 export const useMinesStore = defineStore("mines", {
   state: () => ({
     status: "betActive" as ButtonStatus,
     betValue: 0.1,
     cashOut: 0,
+    /** Each manual-cashout click bumps this; board watches it. */
+    cashoutTrigger: 0,
   }),
 
   getters: {
-    /** The board is clickable only when Cash-Out is showing (but disabled). */
-    boardActive: (s) => s.status === "cashoutInactive",
+    /** Board works whenever a bet has been placed. */
+    boardActive: (s) => s.status !== "betActive",
   },
 
   actions: {
-    /** Called by Bet button. */
+    /* ─── main button click ─── */
     handleClick() {
-      if (this.status !== "betActive") return; // ignore while disabled
-      this.cashOut = this.betValue; // lock wager
-      this.status = "cashoutInactive"; // show disabled Cash-Out
+      const user = useUserStore();
+
+      /** BET → lock stake */
+      if (this.status === "betActive") {
+        if (user.balance < this.betValue) return;
+        user.updateBalance(
+          parseFloat((user.balance - this.betValue).toFixed(2))
+        );
+        this.cashOut = this.betValue;
+        this.status = "cashoutInactive";
+        return;
+      }
+
+      /** CASH OUT (enabled) → freeze & notify board */
+      if (this.status === "cashoutActive") {
+        this.status = "cashoutInactive";
+        this.cashoutTrigger++; // let board revealAll + payout
+      }
     },
 
-    /** Convenience when a brand-new round begins. */
+    /** Promote disabled Cash-Out once player reveals 1st safe tile. */
+    activateCashout() {
+      if (this.status === "cashoutInactive") this.status = "cashoutActive";
+    },
+
+    /** Explosion or other events can force button to disabled state. */
+    forceCashoutInactive() {
+      if (this.status !== "betActive") this.status = "cashoutInactive";
+    },
+
+    /** Round reset */
     startNewRound() {
       this.status = "betActive";
       this.cashOut = 0;
+      this.cashoutTrigger = 0;
     },
 
-    /* bet-amount helpers (unchanged) */
+    /* ─── stake helpers (same as before) ─── */
     increaseBet() {
       this.betValue = parseFloat((this.betValue + 0.1).toFixed(2));
     },
@@ -38,8 +66,7 @@ export const useMinesStore = defineStore("mines", {
       this.betValue = next >= 0.1 ? next : this.betValue;
     },
     setBetValue(amount: number) {
-      const userStore = useUserStore();
-      const cap = parseFloat(userStore.balance.toFixed(2));
+      const cap = parseFloat(useUserStore().balance.toFixed(2));
       this.betValue = amount > cap ? cap : parseFloat(amount.toFixed(2));
     },
   },

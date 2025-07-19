@@ -10,6 +10,7 @@ import { MinesEngine } from "@/components/games/mines/Engine";
 import { useMinesSettings } from "@/components/games/mines/settings";
 import { useMinesRound } from "@/components/games/mines/round";
 import { useMinesStore } from "@/components/games/mines/Store";
+import { useUserStore } from "@/stores/user";
 
 /* ─── props ─── */
 interface Props {
@@ -34,19 +35,28 @@ const BASE_W = props.tileWidth ?? 64;
 const BASE_H = props.tileHeight ?? 48;
 const GAP = props.padding ?? 10;
 
+/* ─── timers ─── */
+let explodeTimer: ReturnType<typeof setTimeout> | null = null;
+let idleTimer: ReturnType<typeof setTimeout> | null = null;
+let cashoutTimer: ReturnType<typeof setTimeout> | null = null;
+
 /* ─── stores ─── */
 const settings = useMinesSettings();
 const round = useMinesRound();
 const uiStore = useMinesStore();
+const userStore = useUserStore();
 
-/** Board is clickable only after the bet is placed */
 const boardActive = computed(() => uiStore.boardActive);
 
 /* ─── helpers ─── */
 function makeNewGame() {
+  clearAllTimers();
+
   engine = new MinesEngine(props.rows, props.cols, settings.minesCount);
   round.startRound(props.rows, props.cols);
   uiStore.startNewRound();
+  firstSafeRevealed = false;
+
   drawBoard();
 }
 
@@ -82,14 +92,34 @@ function drawBoard() {
   }
 
   app.renderer.resize(cssW, cssH);
-  applyDimState(); // set initial contrast
+  applyDimState();
 }
 
+/* ─── dimming ─── */
 function applyDimState() {
-  /* Invert: dim when NOT active, brighten when active */
   const dim = !boardActive.value;
   tiles.forEach((t) => t.setDimmed(dim));
 }
+
+/* ─── timer helpers ─── */
+function clearTimer(t: ReturnType<typeof setTimeout> | null) {
+  if (t) clearTimeout(t);
+}
+function clearAllTimers() {
+  clearTimer(explodeTimer);
+  explodeTimer = null;
+  clearTimer(idleTimer);
+  idleTimer = null;
+  clearTimer(cashoutTimer);
+  cashoutTimer = null;
+}
+function scheduleIdleRestart() {
+  clearTimer(idleTimer);
+  idleTimer = setTimeout(() => makeNewGame(), 30_000);
+}
+
+/* ─── game logic ─── */
+let firstSafeRevealed = false;
 
 function handleTileClick(idx: number) {
   if (!boardActive.value) return;
@@ -99,20 +129,47 @@ function handleTileClick(idx: number) {
   const tile = tiles.get(idx)!;
   round.revealOne();
 
-  if (result === "safe") tile.setKind(TileType.StarGold);
-  else if (result === "explosion") {
+  if (result === "safe") {
+    tile.setKind(TileType.StarGold);
+
+    if (!firstSafeRevealed) {
+      firstSafeRevealed = true;
+      uiStore.activateCashout();
+      clearTimer(idleTimer); // cancel idle auto-restart
+    }
+  } else if (result === "explosion") {
     tile.setKind(TileType.Explosion);
-    revealAll();
+    finishRoundByExplosion();
   }
 }
 
-function revealAll() {
+/* ─── round-end helpers ─── */
+function revealAllTiles() {
   engine.revealAll().forEach((state, idx) => {
     const t = tiles.get(idx)!;
     if (state === "bomb" && t.kind === TileType.Hidden)
       t.revealFinal(TileType.Bomb);
     else if (state === "hidden") t.revealFinal(TileType.StarBlue);
   });
+}
+
+function finishRoundByExplosion() {
+  revealAllTiles();
+  uiStore.forceCashoutInactive();
+  clearTimer(idleTimer);
+  explodeTimer = setTimeout(() => makeNewGame(), 5_000);
+}
+
+function finishRoundByCashout() {
+  revealAllTiles();
+  uiStore.forceCashoutInactive();
+
+  cashoutTimer = setTimeout(() => {
+    userStore.updateBalance(
+      parseFloat((userStore.balance + uiStore.cashOut).toFixed(2))
+    );
+    makeNewGame();
+  }, 5_000);
 }
 
 /* ─── lifecycle ─── */
@@ -134,11 +191,29 @@ onMounted(async () => {
 onUnmounted(() => {
   resizeObserver?.disconnect();
   app.destroy({ removeView: true }, { children: true, texture: true });
+  clearAllTimers();
 });
 
 /* ─── watchers ─── */
 watch(() => settings.minesCount, makeNewGame);
-watch(boardActive, applyDimState); // update contrast on state change
+watch(boardActive, applyDimState);
+
+/* Idle restart logic */
+watch(
+  () => uiStore.status,
+  (s) => {
+    if (s === "cashoutInactive" && !firstSafeRevealed) scheduleIdleRestart();
+    else clearTimer(idleTimer);
+  }
+);
+
+/* ✅ trigger cash-out flow only when counter INCREASES */
+watch(
+  () => uiStore.cashoutTrigger,
+  (newVal, oldVal) => {
+    if (newVal > oldVal) finishRoundByCashout();
+  }
+);
 </script>
 
 <style scoped></style>
