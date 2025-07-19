@@ -1,10 +1,21 @@
-// src/config/gameConfigs.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+export type ConditionType = "rounds" | "stopLoss" | "takeProfit";
+
+export interface AutoModalConfig {
+  /** List of controls that should appear in the modal */
+  conditions: ConditionType[];
+  /** Optional custom button label */
+  buttonLabel?: string;
+}
+
 export interface GameConfig {
   component: () => Promise<any>;
   wrapperBaseClasses: string;
   theme: {
     btn: string;
-    background: string; // full gradient CSS
+    background: string;
     border: string;
   };
   betsClasses: string;
@@ -16,6 +27,8 @@ export interface GameConfig {
     showPayoutChart?: boolean;
     [key: string]: unknown;
   };
+  /** New — omit or leave undefined to hide Auto button */
+  autoModal?: AutoModalConfig;
 }
 
 export const gameConfigs: Record<string, GameConfig> = {
@@ -67,6 +80,10 @@ export const gameConfigs: Record<string, GameConfig> = {
       panelType: "mines",
       gridSize: 5,
       showControls: true,
+    },
+    autoModal: {
+      buttonLabel: "Auto Game",
+      conditions: ["rounds", "stopLoss", "takeProfit"],
     },
   },
 
@@ -150,6 +167,7 @@ export const gameConfigs: Record<string, GameConfig> = {
     },
   },
 
+  /* leave other games unchanged until they support Auto */
   balloon: {
     component: () => import("@/pages/games/balloon/index.vue"),
     wrapperBaseClasses:

@@ -3,6 +3,14 @@ import { useUserStore } from "@/stores/user";
 
 export type ButtonStatus = "betActive" | "cashoutInactive" | "cashoutActive";
 
+export interface AutoState {
+  enabled: boolean;
+  roundsPlanned: number;
+  currentRound: number;
+  stopLoss: number | null;
+  takeProfit: number | null;
+}
+
 export const useMinesStore = defineStore("mines", {
   state: () => ({
     status: "betActive" as ButtonStatus,
@@ -14,11 +22,33 @@ export const useMinesStore = defineStore("mines", {
 
     /* CASH-OUT helpers */
     cashoutTrigger: 0,
+    auto: {
+      enabled: false,
+      roundsPlanned: 3,
+      currentRound: 0,
+      stopLoss: null,
+      takeProfit: null,
+    } as AutoState,
   }),
 
-  getters: { boardActive: (s) => s.status !== "betActive" },
+  getters: {
+    boardActive: (s) => s.status !== "betActive",
+    autoActive: (s) => s.auto.enabled,
+  },
 
   actions: {
+    setAutoConditions(cfg: {
+      rounds: number;
+      stopLoss?: number | null;
+      takeProfit?: number | null;
+    }) {
+      this.auto.enabled = true;
+      this.auto.currentRound = 0;
+      this.auto.roundsPlanned = cfg.rounds;
+      this.auto.stopLoss = cfg.stopLoss ?? null;
+      this.auto.takeProfit = cfg.takeProfit ?? null;
+    },
+
     handleClick() {
       const wallet = useUserStore();
 
@@ -61,9 +91,16 @@ export const useMinesStore = defineStore("mines", {
       this.randomEnabled = false;
       this.randomTrigger = 0;
       this.cashoutTrigger = 0;
+
+      if (this.auto.enabled) {
+        this.auto.currentRound++;
+        // Stop auto if we've done the planned rounds
+        if (this.auto.currentRound >= this.auto.roundsPlanned) {
+          this.auto.enabled = false;
+        }
+      }
     },
 
-    /* bet adjust */
     increaseBet() {
       this.betValue = parseFloat((this.betValue + 0.1).toFixed(2));
     },

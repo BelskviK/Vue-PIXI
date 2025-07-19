@@ -4,17 +4,10 @@
     class="w-full max-w-[50px] h-[50px] mr-3 rounded-full"
     :class="buttonClasses"
   >
-    <!-- show the countdown when in countdown mode -->
-    <span v-if="mode === 'countdown'" class="text-white font-semibold text-lg">
+    <span v-if="mode === 'countdown'" class="font-semibold">
       {{ countdown }}
     </span>
-    <!-- always show the icon otherwise -->
-    <img
-      v-else
-      :src="iconAutoPlay"
-      alt="Auto Play Icon"
-      class="w-6 h-6 flex-shrink-0"
-    />
+    <img v-else :src="iconAutoPlay" alt="Auto" class="w-6 h-6" />
   </button>
 </template>
 
@@ -22,75 +15,59 @@
 import { ref, watch, computed } from "vue";
 import iconAutoPlay from "@/assets/icon-auto-play.svg";
 
-// props and emits
-const props = withDefaults(defineProps<{ active: boolean }>(), {
-  active: false,
-});
+const props = withDefaults(
+  defineProps<{ active: boolean; disabled?: boolean }>(),
+  { active: false, disabled: false }
+);
 const emit = defineEmits<{ (e: "toggle"): void }>();
 
-// local state
 const countdown = ref(0);
-const mode = ref<"active" | "disabled" | "countdown">(
-  props.active ? "active" : "disabled"
-);
+const mode = ref<"active" | "countdown">("active");
 let timer: ReturnType<typeof setInterval> | null = null;
 
-// watch active prop (no immediate to avoid firing on mount)
 watch(
   () => props.active,
   (val) => {
-    if (val) {
-      mode.value = "active";
-      clearTimer();
-    } else {
+    clear();
+    if (!val) {
+      // start countdown when turned off
       mode.value = "countdown";
       countdown.value = 5;
       timer = setInterval(() => {
-        if (countdown.value > 0) {
-          countdown.value--;
-        } else {
-          clearTimer();
-          mode.value = "active";
+        if (countdown.value > 0) countdown.value--;
+        else {
+          clear();
           emit("toggle");
         }
       }, 1000);
-    }
-  }
+    } else mode.value = "active";
+  },
+  { immediate: true }
 );
 
-function clearTimer() {
-  if (timer) {
-    clearInterval(timer);
-    timer = null;
-  }
-  countdown.value = 0;
+function clear() {
+  if (timer) clearInterval(timer);
+  timer = null;
 }
 
 function handleClick() {
-  if (mode.value === "active") {
-    mode.value = "disabled";
-    emit("toggle");
-  }
+  if (props.disabled || mode.value === "countdown") return;
+  emit("toggle");
 }
 
-// compute classes for all modes
 const buttonClasses = computed(() => {
   const base =
-    "w-16 h-16 flex items-center justify-center rounded-full border-2 shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]";
-  if (mode.value === "active") {
-    return [base, "active:translate-y-[2px]", "border-green-400 bg-green-500"];
-  } else if (mode.value === "countdown") {
-    return [base, "border-gray-400 bg-[#cc000e]", "text-white", "text-lg"];
-  } else {
-    // disabled: same green as active but darker, and not clickable
-    return [
-      base,
-      "active:translate-y-[2px]",
-      "border-green-400",
-      "bg-green-600",
-      "cursor-not-allowed",
-      "pointer-events-none",
-    ];
-  }
+    "w-16 h-16 flex items-center justify-center rounded-full border-2 " +
+    "shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]";
+
+  if (props.disabled) return [base, "opacity-40 cursor-not-allowed"];
+  if (mode.value === "active") return [base, "bg-green-500 border-green-400"];
+  return [base, "bg-[#cc000e] border-gray-400 text-white"];
 });
 </script>
+
+<style scoped>
+span {
+  font-size: 1.125rem;
+} /* same as Tailwind text-lg */
+</style>

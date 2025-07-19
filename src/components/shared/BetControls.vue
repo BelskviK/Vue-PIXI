@@ -1,6 +1,10 @@
-<!-- src/components/BetControls.vue -->
+<!-- src/components/shared/BetControls.vue -->
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { ref, computed, watch, defineProps, defineEmits } from "vue";
+import { gameConfigs } from "@/config/gameConfigs";
+import AutoGameModal from "@/components/shared/AutoGameModal.vue";
+
+/* ------- game stores -------- */
 import { useDiceStore } from "@/components/games/dice/Store";
 import { usePlinkoStore } from "@/components/games/plinko/Store";
 import { useMinesStore } from "@/components/games/mines/Store";
@@ -11,23 +15,21 @@ import { useMiniRouletteStore } from "@/components/games/mini-roulette/Store";
 import { useHotlineStore } from "@/components/games/hotline/Store";
 import { useBalloonStore } from "@/components/games/balloon/Store";
 
+/* ------- ui pieces ---------- */
 import BetAuto from "@/components/shared/BetAuto.vue";
 import BetButton from "@/components/shared/BetButton.vue";
 import BetInput from "@/components/shared/BetInput.vue";
 
-// Props from GameView
+/* props -------------------------------------------------------------- */
 const props = defineProps<{
-  classes?: string;
   panelType: string;
+  classes?: string;
   maxBet?: number;
-  gridSize?: number;
-  theme: {
-    btn: string;
-  };
+  theme: { btn: string };
   showControls?: boolean;
 }>();
 
-// Figure out which store to use by panelType
+/* pick store ---------------------------------------------------------- */
 const gameStores: Record<string, any> = {
   dice: useDiceStore(),
   plinko: usePlinkoStore(),
@@ -39,46 +41,62 @@ const gameStores: Record<string, any> = {
   hotline: useHotlineStore(),
   balloon: useBalloonStore(),
 };
-
 const store = gameStores[props.panelType];
 
-// Local UI state
-const betValue = ref<number>(props.maxBet ?? 0);
-const isAuto = ref<boolean>(false);
+/* modal spec ---------------------------------------------------------- */
+const autoCfg = computed(() => gameConfigs[props.panelType]?.autoModal);
 
-// Handlers for input & auto
-function increase() {
-  const step = 0.1;
-  if (!props.maxBet || betValue.value + step <= props.maxBet) {
-    betValue.value = parseFloat((betValue.value + step).toFixed(2));
-  }
-}
-function decrease() {
-  const step = 0.1;
-  if (betValue.value - step >= 0) {
-    betValue.value = parseFloat((betValue.value - step).toFixed(2));
-  }
-}
-function toggleAuto() {
-  isAuto.value = !isAuto.value;
-  // you could wire this into store if you want
-}
+/* stake --------------------------------------------------------------- */
+const betValue = ref(props.maxBet ?? 0);
 
-// Emit events up if you still need them
+/* reactive flags ------------------------------------------------------ */
+const status = computed(() => store.status as string);
+const autoActive = computed(() => store.auto?.enabled ?? false);
+const autoLocked = computed(() => status.value !== "betActive");
+
+/* emit bridge --------------------------------------------------------- */
 const emit = defineEmits<{
-  (e: "update:bet", value: number): void;
-  (e: "toggle:auto", active: boolean): void;
+  (e: "update:bet", v: number): void;
+  (e: "toggle:auto", v: boolean): void;
   (e: "place:bet"): void;
 }>();
 watch(betValue, (v) => emit("update:bet", v));
 
-// Derive button status from store
-const status = computed(() => store.status as string);
+/* helpers ------------------------------------------------------------- */
+function inc() {
+  betValue.value = parseFloat((betValue.value + 0.1).toFixed(2));
+}
+function dec() {
+  betValue.value = Math.max(0, parseFloat((betValue.value - 0.1).toFixed(2)));
+}
 
-// When BetButton clicked, call the store’s handler
 function onBetClick() {
-  store.handleClick();
+  store.handleClick?.(); // some stores may not expose this
   emit("place:bet");
+}
+
+/* auto toggle & modal ------------------------------------------------- */
+const modalOpen = ref(false);
+
+function toggleAuto() {
+  if (autoLocked.value) return;
+
+  /* first click when Auto inactive → open settings */
+  if (!autoActive.value && autoCfg.value) {
+    modalOpen.value = true;
+    return;
+  }
+
+  /* otherwise switch off (only if store has auto) */
+  if (store.auto) store.auto.enabled = false;
+  emit("toggle:auto", false);
+}
+
+function handleAutoSubmit() {
+  /* store.setAutoConditions is defined for mines (others safely ignored) */
+  store.setAutoConditions?.({});
+  emit("toggle:auto", true);
+  modalOpen.value = false;
 }
 </script>
 
@@ -93,21 +111,36 @@ function onBetClick() {
     <div
       class="w-full py-4 md:py-3 flex items-center justify-center flex-col-reverse md:flex-row gap-y-5 md:space-x-4 space-x-0 shadow-inner rounded-xl bg-black/30"
     >
+      <!-- stake -->
       <BetInput
         :value="betValue"
-        @increase="increase"
-        @decrease="decrease"
+        @increase="inc"
+        @decrease="dec"
         :classes="theme.btn"
       />
+
+      <!-- buttons -->
       <div class="flex flex-row justify-between w-[300px]">
-        <BetAuto :active="isAuto" @toggle="toggleAuto" />
-        <!-- now driven by each game’s store -->
+        <BetAuto
+          v-if="autoCfg"
+          :active="autoActive"
+          :disabled="autoLocked"
+          @toggle="toggleAuto"
+        />
         <BetButton :status="status" @bet="onBetClick" />
       </div>
     </div>
+
+    <!-- Auto-Play modal -->
+    <AutoGameModal
+      v-if="modalOpen && autoCfg"
+      v-model="modalOpen"
+      :conditions="autoCfg.conditions"
+      @submit="handleAutoSubmit"
+    />
   </div>
 </template>
 
 <style scoped>
-/* no changes needed */
+/* Tailwind only */
 </style>
