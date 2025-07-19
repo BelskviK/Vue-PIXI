@@ -35,22 +35,27 @@ const BASE_W = props.tileWidth ?? 64;
 const BASE_H = props.tileHeight ?? 48;
 const GAP = props.padding ?? 10;
 
-/* pre-selection (auto-game) */
+/* pre-selection (Auto Game) */
 const preselected = new Set<number>();
 const settings = useMinesSettings();
+const round = useMinesRound();
 const ui = useMinesStore();
 const preselectMode = computed(
   () => ui.auto.enabled && ui.status === "betActive"
 );
+function maxSelectable() {
+  return props.rows * props.cols - settings.minesCount;
+}
+function syncPreselected() {
+  round.setPreselected(preselected.size);
+}
 function clearPreselection() {
   preselected.forEach((idx) => {
     const t = tiles.get(idx);
     if (t && t.kind === TileType.Preselect) t.setKind(TileType.Hidden);
   });
   preselected.clear();
-}
-function maxSelectable() {
-  return props.rows * props.cols - settings.minesCount;
+  syncPreselected();
 }
 
 /* timers */
@@ -59,7 +64,6 @@ let idleTimer: ReturnType<typeof setTimeout> | null = null;
 let cashoutTimer: ReturnType<typeof setTimeout> | null = null;
 
 /* stores */
-const round = useMinesRound();
 const wallet = useUserStore();
 const boardActive = computed(() => ui.boardActive);
 
@@ -130,7 +134,7 @@ function applyDim() {
 /* gameplay */
 let firstSafe = false;
 
-/* ────── CLICK HANDLER ─────────────────────────────────────────────── */
+/* ───── CLICK HANDLER ─────────────────────────────────────────────── */
 function handleTileClick(idx: number) {
   /* Auto-game pre-selection */
   if (preselectMode.value) {
@@ -141,6 +145,7 @@ function handleTileClick(idx: number) {
       preselected.add(idx);
       tiles.get(idx)!.setKind(TileType.Preselect);
     }
+    syncPreselected();
     return;
   }
 
@@ -152,7 +157,7 @@ function handleTileClick(idx: number) {
   const tile = tiles.get(idx)!;
 
   if (result === "safe") {
-    round.revealOne(); // count only safe reveals
+    round.revealOne();
     tile.setKind(TileType.StarGold);
 
     if (!firstSafe) {
@@ -161,28 +166,23 @@ function handleTileClick(idx: number) {
       clear(idleTimer);
     }
   } else {
-    // bomb
     tile.setKind(TileType.Explosion);
     finishByExplosion();
   }
 }
 
-/* ────── RANDOM ACTIONS ────────────────────────────────────────────── */
+/* ───── RANDOM BUTTON ─────────────────────────────────────────────── */
 function preselectRandomTile() {
-  // choose any hidden (non-preselected) tile, respect cap
   if (preselected.size >= maxSelectable()) return;
-
   const options: number[] = [];
-  for (let i = 0; i < props.rows * props.cols; i++) {
+  for (let i = 0; i < props.rows * props.cols; i++)
     if (!preselected.has(i)) options.push(i);
-  }
   if (options.length === 0) return;
-
   const idx = options[Math.floor(Math.random() * options.length)];
   preselected.add(idx);
   tiles.get(idx)!.setKind(TileType.Preselect);
+  syncPreselected();
 }
-
 function revealRandomTile() {
   if (!boardActive.value) return;
   const options: number[] = [];
@@ -192,13 +192,12 @@ function revealRandomTile() {
   const idx = options[Math.floor(Math.random() * options.length)];
   handleTileClick(idx);
 }
-
 function randomAction() {
   if (preselectMode.value) preselectRandomTile();
   else revealRandomTile();
 }
 
-/* ────── FINISH ROUND HELPERS ─────────────────────────────────────── */
+/* ───── ROUND END HELPERS ─────────────────────────────────────────── */
 function revealAllTiles() {
   engine.revealAll().forEach((st, idx) => {
     const t = tiles.get(idx)!;
@@ -210,7 +209,6 @@ function revealAllTiles() {
     else if (st === "hidden") t.revealFinal(TileType.StarBlue);
   });
 }
-
 function finishByExplosion() {
   revealAllTiles();
   round.revealAll();
@@ -218,7 +216,6 @@ function finishByExplosion() {
   clear(idleTimer);
   explodeTimer = setTimeout(makeNewGame, 5_000);
 }
-
 function finishByCashout() {
   revealAllTiles();
   round.revealAll();
@@ -252,7 +249,7 @@ onUnmounted(() => {
   clearAllTimers();
 });
 
-/* ────── WATCHERS ─────────────────────────────────────────────────── */
+/* ───── WATCHERS ─────────────────────────────────────────────────── */
 watch(
   () => settings.minesCount,
   () => {
@@ -260,13 +257,11 @@ watch(
     makeNewGame();
   }
 );
-
 watch(boardActive, applyDim);
 watch(preselectMode, (v) => {
   if (!v) clearPreselection();
   applyDim();
 });
-
 watch(
   () => ui.status,
   (s) => {
@@ -275,7 +270,6 @@ watch(
     else clear(idleTimer);
   }
 );
-
 watch(
   () => ui.cashoutTrigger,
   (n, o) => {
@@ -291,5 +285,5 @@ watch(
 </script>
 
 <style scoped>
-/* PIXI canvas fills parent */
+/* PIXI canvas fills the parent */
 </style>

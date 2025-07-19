@@ -90,12 +90,12 @@ import { useMinesRound } from "@/components/games/mines/round";
 import { useMinesStore } from "@/components/games/mines/Store";
 import { calcMultiplier } from "@/components/games/mines/math";
 
-/* ─── Global stores ─────────────────────────────────────────────────── */
+/* ─── Global stores ─────────────────────────────────────────────── */
 const settings = useMinesSettings();
 const round = useMinesRound();
 const ui = useMinesStore();
 
-/* ─── Dropdown state ───────────────────────────────────────────────── */
+/* ─── Dropdown helpers ───────────────────────────────────────────── */
 const locked = computed(() => ui.dropdownLocked);
 const isOpen = ref(false);
 const numbers = Array.from({ length: 20 }, (_, i) => i + 1);
@@ -120,17 +120,31 @@ function onClickOutside(e: MouseEvent) {
 onMounted(() => document.addEventListener("click", onClickOutside));
 onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
-/* ─── Progress & Multiplier ────────────────────────────────────────── */
+/* ─── Progress & Multiplier ─────────────────────────────────────── */
 const progress = computed(() => round.progressPercent);
 
 const shownMultiplier = ref("—");
 function refreshMultiplier() {
   if (round.finished) return;
-  const m = calcMultiplier(settings.minesCount, round.revealedTiles + 1);
+
+  /* If Auto Game is armed *before* betting, base it on green tiles */
+  const safeCount =
+    ui.auto.enabled && ui.status === "betActive"
+      ? round.preselectedTiles
+      : round.revealedTiles;
+
+  const m = calcMultiplier(settings.minesCount, safeCount + 1);
   shownMultiplier.value = m ? m.toFixed(2) + "x" : "—";
 }
 watch(
-  () => [settings.minesCount, round.revealedTiles, round.finished],
+  () => [
+    settings.minesCount,
+    round.revealedTiles,
+    round.preselectedTiles,
+    round.finished,
+    ui.auto.enabled,
+    ui.status,
+  ],
   refreshMultiplier,
   { immediate: true }
 );
@@ -142,5 +156,5 @@ const multiplierColor = computed(() =>
 </script>
 
 <style scoped>
-/* entirely Tailwind */
+/* Tailwind handles styling */
 </style>
