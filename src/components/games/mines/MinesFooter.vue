@@ -2,16 +2,27 @@
   <div class="flex flex-row w-full items-center justify-center space-x-4">
     <!-- RANDOM button -->
     <button
-      class="cursor-default text-white p-0 border border-[rgba(0,0,0,0.5)] rounded-[20px] bg-[#00000026] shadow-[inset_1px_1px_#fff1cd33] w-full active:translate-y-[2px] hover:shadow-inner active:shadow-inner"
+      @click="store.pickRandomTile()"
       :disabled="isRandomDisabled"
-      @click="$emit('random')"
+      :class="[
+        'w-full p-0 text-white border border-[rgba(0,0,0,0.5)] rounded-[20px] shadow-[inset_1px_1px_#fff1cd33]',
+        /* visual */
+        'bg-[#00000026] hover:shadow-inner active:shadow-inner',
+        /* movement only when enabled */
+        'active:translate-y-[2px] disabled:active:translate-y-0',
+        /* pointer + opacity animation */
+        'transition-opacity duration-200',
+        isRandomDisabled
+          ? 'opacity-40 cursor-not-allowed'
+          : 'opacity-100 cursor-pointer',
+      ]"
     >
-      <span class="flex-1 text-center font-normal truncate text-[14px]"
-        >RANDOM</span
-      >
+      <span class="flex-1 text-center font-normal truncate text-[14px]">
+        RANDOM
+      </span>
     </button>
 
-    <!-- Auto Game toggle -->
+    <!-- Auto Game toggle (unchanged) -->
     <label
       class="inline-flex items-center cursor-pointer space-x-2 truncate bg-black/30 rounded-3xl w-full h-[26px] p-1"
     >
@@ -26,13 +37,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import iconAuto from "@/assets/icon-auto.svg";
+import { useMinesStore } from "@/components/games/mines/Store";
 
-const isRandomDisabled = ref(false);
+const store = useMinesStore();
+const isRandomDisabled = computed(() => !store.randomEnabled);
+
 const autoGame = ref(false);
 </script>
 
 <style scoped>
-/* All styling is handled via Tailwind CSS */
+/* Tailwind handles styling */
 </style>

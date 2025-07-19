@@ -9,7 +9,19 @@
         <div class="relative" ref="wrapper">
           <button
             @click="toggleDropdown"
-            class="flex items-center justify-center w-[130px] h-[20px] rounded-3xl shadow text-white text-[12px] px-2 transition-transform duration-100 active:translate-y-[2px] shadow-[1px_1px_0_rgba(0,0,0,0.3),inset_1px_1px_0_rgba(255,255,255,0.2)] border border-black bg-[#0267a5]"
+            :disabled="dropdownDisabled"
+            :class="[
+              'flex items-center justify-center w-[130px] h-[20px] rounded-3xl text-white text-[12px] px-2',
+              'shadow-[1px_1px_0_rgba(0,0,0,0.3),inset_1px_1px_0_rgba(255,255,255,0.2)] border border-black',
+              /* translate only when active */
+              'transition-transform duration-100 active:translate-y-[2px] disabled:active:translate-y-0',
+              /* fade + pointer */
+              'transition-opacity duration-200',
+              dropdownDisabled
+                ? 'opacity-40 cursor-not-allowed'
+                : 'cursor-pointer',
+            ]"
+            style="background-color: #0267a5"
           >
             <span class="flex-1 text-center font-normal truncate">
               Mines : {{ minesCount }}
@@ -56,7 +68,7 @@
         </div>
       </div>
 
-      <!-- right: next multiplier (placeholder for now) -->
+      <!-- right: next multiplier -->
       <div class="flex w-full align-center justify-end">
         <div
           class="flex items-center justify-center w-[100px] h-[20px] rounded-3xl shadow text-black text-[12px] px-2 transition-transform duration-100 active:translate-y-[2px] shadow-[1px_1px_0_rgba(0,0,0,0.3),inset_1px_1px_0_rgba(255,255,255,0.2)] border border-black bg-[#ffc107]"
@@ -85,17 +97,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useMinesSettings } from "@/components/games/mines/settings";
-import { useMinesRound } from "@/components/games/mines/round"; // 🆕
+import { useMinesRound } from "@/components/games/mines/round";
+import { useMinesStore } from "@/components/games/mines/Store";
 
-/* ─ dropdown logic ─ */
+/* stores */
 const settings = useMinesSettings();
+const round = useMinesRound();
+const uiStore = useMinesStore();
+
+/* dropdown enable / disable */
+const dropdownDisabled = computed(() => uiStore.status !== "betActive");
+
+/* dropdown logic */
 const isOpen = ref(false);
-const numbers = Array.from({ length: 24 }, (_, i) => i + 1); // 1-24 bombs
+const numbers = Array.from({ length: 24 }, (_, i) => i + 1);
 const minesCount = computed(() => settings.minesCount);
 
 function toggleDropdown() {
+  if (dropdownDisabled.value) return;
   isOpen.value = !isOpen.value;
 }
 function selectMines(n: number) {
@@ -103,7 +124,12 @@ function selectMines(n: number) {
   isOpen.value = false;
 }
 
-/* ─ outside-click helper ─ */
+/* close dropdown when it becomes disabled */
+watch(dropdownDisabled, (d) => {
+  if (d) isOpen.value = false;
+});
+
+/* outside click helper */
 const wrapper = ref<HTMLElement | null>(null);
 function handleClickOutside(e: MouseEvent) {
   if (wrapper.value && !wrapper.value.contains(e.target as Node))
@@ -114,11 +140,10 @@ onBeforeUnmount(() =>
   document.removeEventListener("click", handleClickOutside)
 );
 
-/* ─ real progress bar data ─ */
-const round = useMinesRound(); // 🆕
+/* progress bar */
 const minesProgress = computed(() => round.progressPercent);
 
-/* ─ placeholder multiplier (static for now) ─ */
+/* placeholder multiplier */
 const nextMultiplier = ref(1.1);
 </script>
 
