@@ -37,7 +37,7 @@
         <!-- dropdown menu -->
         <div
           v-if="isOpen"
-          class="absolute top-full left-0 mt-1 w-[130px] bg-[#032e49] rounded-xl p-4 z-10 max-h-[200px] overflow-y-auto"
+          class="absolute top-full left-0 mt-1 w-[150px] bg-[#032e49] rounded-xl p-3 z-10 max-h-[200px] overflow-y-auto"
         >
           <div class="grid grid-cols-1 gap-2">
             <button
@@ -45,7 +45,7 @@
               :key="n"
               @click="selectMines(n)"
               :class="[
-                'rounded-full border border-black py-1 text-xs font-medium active:translate-y-[2px]',
+                'rounded-full border border-black py-1 text-[10px] font-medium active:translate-y-[2px]',
                 minesCount === n
                   ? 'bg-[#2f82b5] text-white'
                   : 'bg-[#094164] text-white hover:bg-[#0b5679]',
