@@ -17,17 +17,21 @@ export interface AutoState {
 }
 
 export const useMinesStore = defineStore("mines", {
+  /* ─────────────── STATE ─────────────── */
   state: () => ({
     status: "betActive" as ButtonStatus,
     betValue: 0.1,
 
-    /* RANDOM helpers */
+    /* RANDOM */
     randomEnabled: false,
     randomTrigger: 0,
 
-    /* CASH-OUT helpers */
+    /* CASH-OUT */
     cashoutTrigger: 0,
-    lastWin: 0, // ← NEW — stores the last cashed-out amount
+    lastWin: 0,
+
+    /* single-tile undo trigger (Auto) */
+    undoPreselectTrigger: 0,
 
     /* AUTO-PLAY */
     auto: <AutoState>{
@@ -72,7 +76,7 @@ export const useMinesStore = defineStore("mines", {
       const settings = useMinesSettings();
       const round = useMinesRound();
 
-      /* place bet --------------------------------------------------- */
+      /* place bet */
       if (this.status === "betActive") {
         if (wallet.balance < this.betValue) return;
 
@@ -82,20 +86,19 @@ export const useMinesStore = defineStore("mines", {
 
         this.status = "cashoutInactive";
         this.randomEnabled = true;
-        this.lastWin = 0; // reset preview before the round
+        this.lastWin = 0;
         if (this.auto.enabled) this.auto.running = true;
         return;
       }
 
-      /* cash-out ---------------------------------------------------- */
+      /* cash-out */
       if (this.status === "cashoutActive") {
-        // calculate win
         const mult = calcMultiplier(settings.minesCount, round.revealedTiles);
         const win = parseFloat((this.betValue * mult).toFixed(2));
 
         wallet.updateBalance(parseFloat((wallet.balance + win).toFixed(2)));
 
-        this.lastWin = win; // ← store the amount for frozen display
+        this.lastWin = win;
         this.status = "cashoutInactive";
         this.cashoutTrigger++;
         this.randomEnabled = false;
@@ -103,17 +106,26 @@ export const useMinesStore = defineStore("mines", {
     },
 
     /* ---------- board-delegated helpers ---------- */
+    /** turns grey → yellow once first safe tile is revealed */
     activateCashout() {
       if (this.status === "cashoutInactive") this.status = "cashoutActive";
     },
+    /** force back to grey (round ended by bomb or cash-out) */
     forceCashoutInactive() {
       if (this.status !== "betActive") this.status = "cashoutInactive";
       this.randomEnabled = false;
     },
 
-    /* RANDOM click */
+    /* RANDOM button */
     pickRandomTile() {
       if (this.randomButtonEnabled) this.randomTrigger++;
+    },
+
+    /* Auto icon: undo one pre-selected tile */
+    undoPreselectedTile() {
+      if (this.auto.enabled && this.status === "betActive") {
+        this.undoPreselectTrigger++;
+      }
     },
 
     /* ---------- round reset ---------- */
@@ -122,7 +134,8 @@ export const useMinesStore = defineStore("mines", {
       this.randomEnabled = false;
       this.randomTrigger = 0;
       this.cashoutTrigger = 0;
-      this.lastWin = 0; // clear frozen value for next round
+      this.undoPreselectTrigger = 0;
+      this.lastWin = 0;
 
       if (this.auto.enabled) {
         this.auto.currentRound++;
@@ -133,7 +146,7 @@ export const useMinesStore = defineStore("mines", {
       }
     },
 
-    /* stake helpers ----------------------------------------------- */
+    /* stake helpers */
     increaseBet() {
       this.betValue = parseFloat((this.betValue + 0.1).toFixed(2));
     },

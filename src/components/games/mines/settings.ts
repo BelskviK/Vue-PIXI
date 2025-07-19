@@ -9,7 +9,7 @@ export const useMinesSettings = defineStore("minesSettings", {
   actions: {
     setMinesCount(n: number) {
       /* clamp to the allowed range 1-20 */
-      this.minesCount = Math.min(20, Math.max(1, Math.floor(n)));
+      this.minesCount = Math.min(21, Math.max(1, Math.floor(n)));
     },
   },
 });

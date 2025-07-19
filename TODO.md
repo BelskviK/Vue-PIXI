@@ -12,3 +12,10 @@
 - [ ] **BetInput / NumPad / ValuePicker:** pull their colours dynamically from config.
 
 - [ ] **Global:** remove any lingering `defineProps` warnings.
+- [ ] when selected mines = 1 multiplier rounds 24 to 500
+      adjustments:
+
+- [ ✅ ] nextMultiplier did not worked on last selected two tiles until (fullgrid.q - selectedMines)
+- [ ✅ ] implemented 🔃 to restart preselected grid in auto-game.
+- [ ❌ ] highlited SVGs in game selector dropdown.
+- [ ❌ ] auto-game is ruled with all conditions from modal.

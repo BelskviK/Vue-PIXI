@@ -13,7 +13,7 @@ import { useMinesStore } from "@/components/games/mines/Store";
 import { useUserStore } from "@/stores/user";
 import { calcMultiplier } from "@/components/games/mines/math";
 
-/* props */
+/* ---------- props ---------- */
 interface Props {
   rows: number;
   cols: number;
@@ -23,19 +23,19 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-/* PIXI */
+/* ---------- PIXI ---------- */
 const container = ref<HTMLDivElement | null>(null);
 let app: Application;
 let resizeObserver: ResizeObserver;
 
-/* engine & tiles */
+/* ---------- state & helpers ---------- */
 let engine: MinesEngine;
 const tiles = new Map<number, Tile>();
 const BASE_W = props.tileWidth ?? 64;
 const BASE_H = props.tileHeight ?? 48;
 const GAP = props.padding ?? 10;
 
-/* pre-selection (Auto Game) */
+/* pre-selection */
 const preselected = new Set<number>();
 const settings = useMinesSettings();
 const round = useMinesRound();
@@ -57,17 +57,29 @@ function clearPreselection() {
   preselected.clear();
   syncPreselected();
 }
+/* NEW — remove only the most-recent green tile */
+function deselectOnePreselection() {
+  if (preselected.size === 0) return;
+  const idx = Array.from(preselected).pop()!;
+  preselected.delete(idx);
+
+  const t = tiles.get(idx);
+  if (t && t.kind === TileType.Preselect) t.setKind(TileType.Hidden);
+
+  syncPreselected();
+}
 
 /* timers */
 let explodeTimer: ReturnType<typeof setTimeout> | null = null;
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
 let cashoutTimer: ReturnType<typeof setTimeout> | null = null;
 
-/* stores */
+/* other stores & flags */
 const wallet = useUserStore();
 const boardActive = computed(() => ui.boardActive);
+let firstSafe = false;
 
-/* helpers */
+/* ---------- core helpers ---------- */
 function clear(t: ReturnType<typeof setTimeout> | null) {
   if (t) clearTimeout(t);
 }
@@ -83,7 +95,6 @@ function scheduleIdleRestart() {
   clear(idleTimer);
   idleTimer = setTimeout(makeNewGame, 30_000);
 }
-
 function makeNewGame() {
   clearAllTimers();
   clearPreselection();
@@ -94,7 +105,7 @@ function makeNewGame() {
   drawBoard();
 }
 
-/* board drawing */
+/* ---------- board drawing ---------- */
 function drawBoard() {
   if (!container.value) return;
   app.stage.removeChildren();
@@ -123,6 +134,7 @@ function drawBoard() {
       tiles.set(idx, t);
       app.stage.addChild(t);
     }
+
   app.renderer.resize(cssW, cssH);
   applyDim();
 }
@@ -131,10 +143,7 @@ function applyDim() {
   tiles.forEach((t) => t.setDimmed(dim));
 }
 
-/* gameplay */
-let firstSafe = false;
-
-/* ───── CLICK HANDLER ─────────────────────────────────────────────── */
+/* ---------- gameplay ---------- */
 function handleTileClick(idx: number) {
   /* Auto-game pre-selection */
   if (preselectMode.value) {
@@ -171,7 +180,7 @@ function handleTileClick(idx: number) {
   }
 }
 
-/* ───── RANDOM BUTTON ─────────────────────────────────────────────── */
+/* RANDOM helpers */
 function preselectRandomTile() {
   if (preselected.size >= maxSelectable()) return;
   const options: number[] = [];
@@ -197,7 +206,7 @@ function randomAction() {
   else revealRandomTile();
 }
 
-/* ───── ROUND END HELPERS ─────────────────────────────────────────── */
+/* round-finishing helpers */
 function revealAllTiles() {
   engine.revealAll().forEach((st, idx) => {
     const t = tiles.get(idx)!;
@@ -229,7 +238,7 @@ function finishByCashout() {
   }, 5_000);
 }
 
-/* lifecycle */
+/* ---------- lifecycle ---------- */
 onMounted(async () => {
   app = new Application();
   await app.init({
@@ -249,7 +258,7 @@ onUnmounted(() => {
   clearAllTimers();
 });
 
-/* ───── WATCHERS ─────────────────────────────────────────────────── */
+/* ---------- watchers ---------- */
 watch(
   () => settings.minesCount,
   () => {
@@ -280,6 +289,13 @@ watch(
   () => ui.randomTrigger,
   (n, o) => {
     if (n > o) randomAction();
+  }
+);
+/* NEW — watch for single-tile undo */
+watch(
+  () => ui.undoPreselectTrigger,
+  (n, o) => {
+    if (n > o) deselectOnePreselection();
   }
 );
 </script>

@@ -29,12 +29,22 @@
           : 'opacity-40 cursor-not-allowed'
       "
     >
-      <img :src="iconAuto" alt="Auto" class="w-[18px] h-[20px]" />
+      <!-- icon stays in the label, but we fully cancel default toggle -->
+      <img
+        :src="iconAuto"
+        alt="Auto"
+        class="w-[18px] h-[20px]"
+        :class="
+          preselectMode
+            ? 'hover:opacity-80 active:translate-y-[1px]'
+            : 'opacity-60 cursor-not-allowed'
+        "
+        @click.stop.prevent="handleUndoPreselect"
+      />
 
       <!-- hidden checkbox drives peer styles -->
       <input
         id="auto-toggle"
-        name="auto-toggle"
         type="checkbox"
         class="sr-only peer"
         v-model="store.auto.enabled"
@@ -46,7 +56,7 @@
         class="w-9 h-5 rounded-full bg-white/20 relative peer-checked:bg-lime-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4 peer-checked:after:bg-green-400"
       ></div>
 
-      <span class="text-white text-center text-[12px]">Auto Game</span>
+      <span class="text-white text-center text-[12px]">Auto&nbsp;Game</span>
     </label>
   </div>
 </template>
@@ -57,9 +67,15 @@ import iconAuto from "@/assets/icon-auto.svg";
 import { useMinesStore } from "@/components/games/mines/Store";
 
 const store = useMinesStore();
-const randomClickable = computed(() => store.randomButtonEnabled);
-</script>
 
-<style scoped>
-/* Tailwind handles styling */
-</style>
+/* UI helpers */
+const randomClickable = computed(() => store.randomButtonEnabled);
+const preselectMode = computed(
+  () => store.auto.enabled && store.status === "betActive"
+);
+
+/* one-step undo, but only when allowed */
+function handleUndoPreselect() {
+  if (preselectMode.value) store.undoPreselectedTile();
+}
+</script>
