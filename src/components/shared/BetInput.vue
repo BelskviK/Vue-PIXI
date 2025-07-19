@@ -89,7 +89,7 @@
       >
         Bet USD
       </p>
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid grid-cols-2 gap-2 text-white">
         <button
           v-for="amount in amounts"
           :key="amount"
