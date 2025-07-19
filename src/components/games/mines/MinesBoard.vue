@@ -35,15 +35,31 @@ const BASE_W = props.tileWidth ?? 64;
 const BASE_H = props.tileHeight ?? 48;
 const GAP = props.padding ?? 10;
 
+/* pre-selection (auto-game) */
+const preselected = new Set<number>();
+const settings = useMinesSettings();
+const ui = useMinesStore();
+const preselectMode = computed(
+  () => ui.auto.enabled && ui.status === "betActive"
+);
+function clearPreselection() {
+  preselected.forEach((idx) => {
+    const t = tiles.get(idx);
+    if (t && t.kind === TileType.Preselect) t.setKind(TileType.Hidden);
+  });
+  preselected.clear();
+}
+function maxSelectable() {
+  return props.rows * props.cols - settings.minesCount;
+}
+
 /* timers */
 let explodeTimer: ReturnType<typeof setTimeout> | null = null;
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
 let cashoutTimer: ReturnType<typeof setTimeout> | null = null;
 
 /* stores */
-const settings = useMinesSettings();
 const round = useMinesRound();
-const ui = useMinesStore();
 const wallet = useUserStore();
 const boardActive = computed(() => ui.boardActive);
 
@@ -66,6 +82,7 @@ function scheduleIdleRestart() {
 
 function makeNewGame() {
   clearAllTimers();
+  clearPreselection();
   engine = new MinesEngine(props.rows, props.cols, settings.minesCount);
   round.startRound(props.rows, props.cols);
   ui.startNewRound();
@@ -106,14 +123,28 @@ function drawBoard() {
   applyDim();
 }
 function applyDim() {
-  const dim = !boardActive.value;
+  const dim = !boardActive.value && !preselectMode.value;
   tiles.forEach((t) => t.setDimmed(dim));
 }
 
 /* gameplay */
 let firstSafe = false;
 
+/* ────── CLICK HANDLER ─────────────────────────────────────────────── */
 function handleTileClick(idx: number) {
+  /* Auto-game pre-selection */
+  if (preselectMode.value) {
+    if (preselected.has(idx)) {
+      preselected.delete(idx);
+      tiles.get(idx)!.setKind(TileType.Hidden);
+    } else if (preselected.size < maxSelectable()) {
+      preselected.add(idx);
+      tiles.get(idx)!.setKind(TileType.Preselect);
+    }
+    return;
+  }
+
+  /* Normal play */
   if (!boardActive.value) return;
   if (engine.exploded || engine.isRevealed(idx)) return;
 
@@ -121,7 +152,7 @@ function handleTileClick(idx: number) {
   const tile = tiles.get(idx)!;
 
   if (result === "safe") {
-    round.revealOne(); // ✅ count only safe reveals
+    round.revealOne(); // count only safe reveals
     tile.setKind(TileType.StarGold);
 
     if (!firstSafe) {
@@ -136,37 +167,22 @@ function handleTileClick(idx: number) {
   }
 }
 
-function revealAllTiles() {
-  engine.revealAll().forEach((st, idx) => {
-    const t = tiles.get(idx)!;
-    if (st === "bomb" && t.kind === TileType.Hidden)
-      t.revealFinal(TileType.Bomb);
-    else if (st === "hidden") t.revealFinal(TileType.StarBlue);
-  });
+/* ────── RANDOM ACTIONS ────────────────────────────────────────────── */
+function preselectRandomTile() {
+  // choose any hidden (non-preselected) tile, respect cap
+  if (preselected.size >= maxSelectable()) return;
+
+  const options: number[] = [];
+  for (let i = 0; i < props.rows * props.cols; i++) {
+    if (!preselected.has(i)) options.push(i);
+  }
+  if (options.length === 0) return;
+
+  const idx = options[Math.floor(Math.random() * options.length)];
+  preselected.add(idx);
+  tiles.get(idx)!.setKind(TileType.Preselect);
 }
 
-function finishByExplosion() {
-  revealAllTiles();
-  round.revealAll(); // mark finished (freezes multiplier)
-  ui.forceCashoutInactive();
-  clear(idleTimer);
-  explodeTimer = setTimeout(makeNewGame, 5_000);
-}
-
-function finishByCashout() {
-  revealAllTiles();
-  round.revealAll(); // mark finished
-  ui.forceCashoutInactive();
-
-  const win =
-    ui.betValue * calcMultiplier(settings.minesCount, round.revealedTiles);
-  cashoutTimer = setTimeout(() => {
-    wallet.updateBalance(parseFloat((wallet.balance + win).toFixed(2)));
-    makeNewGame();
-  }, 5_000);
-}
-
-/* RANDOM support */
 function revealRandomTile() {
   if (!boardActive.value) return;
   const options: number[] = [];
@@ -175,6 +191,45 @@ function revealRandomTile() {
   if (options.length === 0) return;
   const idx = options[Math.floor(Math.random() * options.length)];
   handleTileClick(idx);
+}
+
+function randomAction() {
+  if (preselectMode.value) preselectRandomTile();
+  else revealRandomTile();
+}
+
+/* ────── FINISH ROUND HELPERS ─────────────────────────────────────── */
+function revealAllTiles() {
+  engine.revealAll().forEach((st, idx) => {
+    const t = tiles.get(idx)!;
+    if (
+      st === "bomb" &&
+      (t.kind === TileType.Hidden || t.kind === TileType.Preselect)
+    )
+      t.revealFinal(TileType.Bomb);
+    else if (st === "hidden") t.revealFinal(TileType.StarBlue);
+  });
+}
+
+function finishByExplosion() {
+  revealAllTiles();
+  round.revealAll();
+  ui.forceCashoutInactive();
+  clear(idleTimer);
+  explodeTimer = setTimeout(makeNewGame, 5_000);
+}
+
+function finishByCashout() {
+  revealAllTiles();
+  round.revealAll();
+  ui.forceCashoutInactive();
+
+  const win =
+    ui.betValue * calcMultiplier(settings.minesCount, round.revealedTiles);
+  cashoutTimer = setTimeout(() => {
+    wallet.updateBalance(parseFloat((wallet.balance + win).toFixed(2)));
+    makeNewGame();
+  }, 5_000);
 }
 
 /* lifecycle */
@@ -197,16 +252,30 @@ onUnmounted(() => {
   clearAllTimers();
 });
 
-/* watchers */
-watch(() => settings.minesCount, makeNewGame);
+/* ────── WATCHERS ─────────────────────────────────────────────────── */
+watch(
+  () => settings.minesCount,
+  () => {
+    clearPreselection();
+    makeNewGame();
+  }
+);
+
 watch(boardActive, applyDim);
+watch(preselectMode, (v) => {
+  if (!v) clearPreselection();
+  applyDim();
+});
+
 watch(
   () => ui.status,
   (s) => {
+    if (s !== "betActive") clearPreselection();
     if (s === "cashoutInactive" && !firstSafe) scheduleIdleRestart();
     else clear(idleTimer);
   }
 );
+
 watch(
   () => ui.cashoutTrigger,
   (n, o) => {
@@ -216,9 +285,11 @@ watch(
 watch(
   () => ui.randomTrigger,
   (n, o) => {
-    if (n > o) revealRandomTile();
+    if (n > o) randomAction();
   }
 );
 </script>
 
-<style scoped></style>
+<style scoped>
+/* PIXI canvas fills parent */
+</style>

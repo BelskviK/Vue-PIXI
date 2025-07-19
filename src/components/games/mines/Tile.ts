@@ -3,18 +3,22 @@ import { Container, Graphics, FillGradient, Ticker } from "pixi.js";
 /* ───────────── Public API ───────────── */
 export enum TileType {
   Hidden = "hidden",
+  Preselect = "preselect", // ⬅️ NEW – green pre-selected tile
   Bomb = "bomb",
   StarBlue = "starBlue",
   StarGold = "starGold",
   Explosion = "explosion",
 }
+
 export const TILE_CYCLE: TileType[] = [
   TileType.Hidden,
+  TileType.Preselect, // ⬅️ include in cycle so setKind works
   TileType.Bomb,
   TileType.StarBlue,
   TileType.StarGold,
   TileType.Explosion,
 ];
+
 export interface TileOptions {
   width?: number;
   height?: number;
@@ -121,9 +125,10 @@ export class Tile extends Container {
     });
 
     this.icon.clear();
-    if (this.kind === TileType.Hidden) {
+    if (this.kind === TileType.Hidden || this.kind === TileType.Preselect) {
       const radius = Math.min(this.w, this.h) * 0.2;
-      this.icon.circle(0, 0, radius).fill(BORDER_COLOR);
+      const col = this.kind === TileType.Preselect ? 0xffffff : BORDER_COLOR;
+      this.icon.circle(0, 0, radius).fill(col);
     } else {
       drawIcon(this.icon, this.kind, this.w, this.h);
     }
@@ -162,14 +167,17 @@ export class Tile extends Container {
 /* ───── Utility helpers ───── */
 function faceColors(kind: TileType): [number, number] {
   switch (kind) {
+    case TileType.Preselect:
+      return [0x2ecc71, 0x27ae60]; // green gradient
     case TileType.StarGold:
       return [0xffc63c, 0xe88900];
     case TileType.Explosion:
       return [0xff8a97, 0xdd4c66];
     default:
-      return [0x0b5aa4, 0x064186];
+      return [0x0b5aa4, 0x064186]; // default blue
   }
 }
+
 function drawIcon(g: Graphics, kind: TileType, w: number, h: number): void {
   const size = Math.min(w, h) * 0.45;
   switch (kind) {
