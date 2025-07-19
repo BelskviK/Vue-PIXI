@@ -60,7 +60,8 @@
       <!-- multiplier preview -->
       <div class="flex flex-1 justify-end">
         <div
-          class="flex items-center justify-center w-[100px] h-[20px] rounded-3xl bg-[#ffc107] border border-black shadow-[1px_1px_0_rgba(0,0,0,0.3),inset_1px_1px_0_rgba(255,255,255,0.2)] transition active:translate-y-[2px]"
+          class="flex items-center justify-center w-[100px] h-[20px] rounded-3xl border border-black shadow-[1px_1px_0_rgba(0,0,0,0.3),inset_1px_1px_0_rgba(255,255,255,0.2)] transition active:translate-y-[2px]"
+          :style="{ backgroundColor: multiplierColor }"
         >
           <span class="flex-1 text-center text-[12px] truncate">
             Next: {{ shownMultiplier }}
@@ -89,13 +90,13 @@ import { useMinesRound } from "@/components/games/mines/round";
 import { useMinesStore } from "@/components/games/mines/Store";
 import { calcMultiplier } from "@/components/games/mines/math";
 
-/* ─── Global stores ───────────────────────────────────────────────────── */
+/* ─── Global stores ─────────────────────────────────────────────────── */
 const settings = useMinesSettings();
 const round = useMinesRound();
 const ui = useMinesStore();
 
-/* ─── Dropdown state ──────────────────────────────────────────────────── */
-const locked = computed(() => ui.status !== "betActive");
+/* ─── Dropdown state ───────────────────────────────────────────────── */
+const locked = computed(() => ui.dropdownLocked);
 const isOpen = ref(false);
 const numbers = Array.from({ length: 20 }, (_, i) => i + 1);
 const minesCount = computed(() => settings.minesCount);
@@ -119,7 +120,7 @@ function onClickOutside(e: MouseEvent) {
 onMounted(() => document.addEventListener("click", onClickOutside));
 onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
-/* ─── Progress & Multiplier ───────────────────────────────────────────── */
+/* ─── Progress & Multiplier ────────────────────────────────────────── */
 const progress = computed(() => round.progressPercent);
 
 const shownMultiplier = ref("—");
@@ -132,6 +133,11 @@ watch(
   () => [settings.minesCount, round.revealedTiles, round.finished],
   refreshMultiplier,
   { immediate: true }
+);
+
+/* pill colour: green when Auto armed, gold otherwise */
+const multiplierColor = computed(() =>
+  ui.auto.enabled ? "#28a745" : "#ffc107"
 );
 </script>
 

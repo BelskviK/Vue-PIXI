@@ -50,10 +50,11 @@ const autoCfg = computed(() => gameConfigs[props.panelType]?.autoModal);
 const betValue = ref(props.maxBet ?? 0);
 
 /* reactive flags ------------------------------------------------------ */
-const status = computed(() => store.status as string);
+const status = computed(() => store.betButtonStatus as string);
 const autoEnabled = computed(() => store.auto?.enabled ?? false);
 const autoRunning = computed(() => store.auto?.running ?? false);
-const autoLocked = computed(() => status.value !== "betActive");
+const roundLocked = computed(() => store.status !== "betActive"); // round in progress
+const betAutoDisabled = computed(() => roundLocked.value || !autoEnabled.value);
 
 /* emit bridge --------------------------------------------------------- */
 const emit = defineEmits<{
@@ -70,7 +71,6 @@ function inc() {
 function dec() {
   betValue.value = Math.max(0, parseFloat((betValue.value - 0.1).toFixed(2)));
 }
-
 function onBetClick() {
   store.handleClick?.();
   emit("place:bet");
@@ -80,17 +80,13 @@ function onBetClick() {
 const modalOpen = ref(false);
 
 function toggleAuto() {
-  if (autoLocked.value) return; // round running → ignore click
-
-  /* Always (re-)open the settings when Auto isn’t running yet */
+  if (betAutoDisabled.value) return; // locked or not-armed → ignore
   if (!autoRunning.value && autoCfg.value) {
-    modalOpen.value = true;
+    modalOpen.value = true; // open settings modal
   }
-  /* -- do NOT flip the footer checkbox here -- */
 }
 
 function handleAutoSubmit(payload?: any) {
-  /* store setter exists only on games that support auto */
   if (payload) store.setAutoConditions?.(payload);
   emit("toggle:auto", true);
   modalOpen.value = false;
@@ -106,7 +102,7 @@ function handleAutoSubmit(payload?: any) {
     ]"
   >
     <div
-      class="w-full py-4 md:py-3 flex items-center justify-center flex-col-reverse md:flex-row gap-y-5 md:space-x-4 space-x-0 shadow-inner rounded-xl bg-black/30"
+      class="w-full py-4 md:py-3 flex items-center justify-center flex-col-reverse md:flex-row gap-y-5 md:space-x-4 shadow-inner rounded-xl bg-black/30"
     >
       <!-- stake -->
       <BetInput
@@ -122,7 +118,7 @@ function handleAutoSubmit(payload?: any) {
           v-if="autoCfg"
           :running="autoRunning"
           :ready="autoEnabled"
-          :disabled="autoLocked"
+          :disabled="betAutoDisabled"
           @toggle="toggleAuto"
         />
         <BetButton :status="status" @bet="onBetClick" />

@@ -1,13 +1,15 @@
+<!-- src/components/shared/BetAuto.vue -->
 <template>
   <button
     @click="handleClick"
     class="w-full max-w-[50px] h-[50px] mr-3 rounded-full"
+    :disabled="disabled"
     :class="buttonClasses"
   >
     <!-- countdown while running -->
-    <span v-if="running" class="text-white font-semibold text-lg">{{
-      countdown
-    }}</span>
+    <span v-if="running" class="text-white font-semibold text-lg">
+      {{ countdown }}
+    </span>
 
     <!-- icon when idle -->
     <img
@@ -27,14 +29,14 @@ const props = withDefaults(
   defineProps<{
     running: boolean; // red / countdown mode
     ready: boolean; // checkbox ticked
-    disabled: boolean; // round active
+    disabled: boolean; // round locked OR not-ready
   }>(),
   { running: false, ready: false, disabled: false }
 );
 
 const emit = defineEmits<{ (e: "toggle"): void }>();
 
-/* simple 5-step visual countdown */
+/* ---------------- countdown while running --------------------------- */
 const countdown = ref(0);
 watch(
   () => props.running,
@@ -43,13 +45,13 @@ watch(
   }
 );
 
-/* click: open modal when idle & not disabled */
+/* ---------------- click logic --------------------------------------- */
 function handleClick() {
-  if (props.disabled) return;
-  if (!props.running) emit("toggle");
+  if (props.disabled) return; // guard: inactive
+  if (!props.running) emit("toggle"); // open modal when idle
 }
 
-/* classes */
+/* ---------------- styling ------------------------------------------- */
 const buttonClasses = computed(() => {
   const base =
     "w-16 h-16 flex items-center justify-center rounded-full border-2 " +
@@ -59,7 +61,7 @@ const buttonClasses = computed(() => {
 
   if (props.running) return [base, "bg-[#cc000e] border-gray-400"]; // red
 
-  /* idle  */
+  /* idle */
   const dim = props.ready ? "opacity-100" : "opacity-40";
   return [base, dim, "bg-green-500 border-green-400 hover:brightness-110"];
 });
