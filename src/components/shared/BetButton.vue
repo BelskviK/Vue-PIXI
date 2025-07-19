@@ -1,3 +1,4 @@
+<!-- src/components/shared/BetButton.vue -->
 <template>
   <button
     :disabled="isDisabled"
@@ -87,10 +88,21 @@ const gradientStyle = computed(() => {
       };
 });
 
-/* live cash-out amount */
+/* live cash-out amount
+   ─────────────────────
+   • cashoutActive   → real-time multiplier value
+   • cashoutInactive → frozen lastWin stored in the store
+   • anything else   → "0.00"
+*/
 const liveCash = computed(() => {
-  const mult = calcMultiplier(settings.minesCount, round.revealedTiles);
-  return (ui.betValue * mult).toFixed(2);
+  if (props.status === "cashoutActive") {
+    const mult = calcMultiplier(settings.minesCount, round.revealedTiles);
+    return (ui.betValue * mult).toFixed(2);
+  }
+  if (props.status === "cashoutInactive") {
+    return ui.lastWin.toFixed(2);
+  }
+  return "0.00";
 });
 
 function handleClick() {

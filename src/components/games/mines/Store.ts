@@ -1,12 +1,15 @@
 // src/components/games/mines/Store.ts
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/user";
+import { useMinesSettings } from "@/components/games/mines/settings";
+import { useMinesRound } from "@/components/games/mines/round";
+import { calcMultiplier } from "@/components/games/mines/math";
 
 export type ButtonStatus = "betActive" | "cashoutInactive" | "cashoutActive";
 
 export interface AutoState {
-  enabled: boolean; // user ticked “Auto Game”
-  running: boolean; // first bet already placed
+  enabled: boolean;
+  running: boolean;
   roundsPlanned: number;
   currentRound: number;
   stopLoss: number | null;
@@ -24,6 +27,7 @@ export const useMinesStore = defineStore("mines", {
 
     /* CASH-OUT helpers */
     cashoutTrigger: 0,
+    lastWin: 0, // ← NEW — stores the last cashed-out amount
 
     /* AUTO-PLAY */
     auto: <AutoState>{
@@ -36,26 +40,17 @@ export const useMinesStore = defineStore("mines", {
     },
   }),
 
-  /* ─────────────── GETTERS  (pure, side-effect–free) ──────────────── */
+  /* ─────────────── GETTERS ─────────────── */
   getters: {
-    /** board is interactable only between bet and cash-out */
     boardActive: (s) => s.status !== "betActive",
-
-    /** red countdown indicator */
     autoActive: (s) => s.auto.running,
-
-    /** header dropdown locked either while a round is running **or** Auto is armed */
     dropdownLocked: (s) => s.status !== "betActive" || s.auto.enabled,
-
-    /** RANDOM button clickable if round logic enabled _or_ Auto armed  */
     randomButtonEnabled: (s) => s.randomEnabled || s.auto.enabled,
-
-    /** central BET / CASH-OUT button visual state */
     betButtonStatus: (s): ButtonStatus | "betInactive" =>
       s.auto.enabled ? "betInactive" : s.status,
   },
 
-  /* ─────────────── MUTATIONS / ACTIONS  (stateful) ─────────────────── */
+  /* ─────────────── ACTIONS ─────────────── */
   actions: {
     /* ---------- called by Auto-Play modal ---------- */
     setAutoConditions(cfg: {
@@ -64,7 +59,7 @@ export const useMinesStore = defineStore("mines", {
       takeProfit?: number | null;
     }) {
       this.auto.enabled = true;
-      this.auto.running = false; // will start on 1st bet
+      this.auto.running = false;
       this.auto.currentRound = 0;
       this.auto.roundsPlanned = cfg.rounds;
       this.auto.stopLoss = cfg.stopLoss ?? null;
@@ -74,23 +69,33 @@ export const useMinesStore = defineStore("mines", {
     /* ---------- main BET / CASH-OUT button ---------- */
     handleClick() {
       const wallet = useUserStore();
+      const settings = useMinesSettings();
+      const round = useMinesRound();
 
-      /* place bet ----------------------------------------------------- */
+      /* place bet --------------------------------------------------- */
       if (this.status === "betActive") {
         if (wallet.balance < this.betValue) return;
+
         wallet.updateBalance(
           parseFloat((wallet.balance - this.betValue).toFixed(2))
         );
 
         this.status = "cashoutInactive";
         this.randomEnabled = true;
-
-        if (this.auto.enabled) this.auto.running = true; // start countdown
+        this.lastWin = 0; // reset preview before the round
+        if (this.auto.enabled) this.auto.running = true;
         return;
       }
 
-      /* cash-out ------------------------------------------------------ */
+      /* cash-out ---------------------------------------------------- */
       if (this.status === "cashoutActive") {
+        // calculate win
+        const mult = calcMultiplier(settings.minesCount, round.revealedTiles);
+        const win = parseFloat((this.betValue * mult).toFixed(2));
+
+        wallet.updateBalance(parseFloat((wallet.balance + win).toFixed(2)));
+
+        this.lastWin = win; // ← store the amount for frozen display
         this.status = "cashoutInactive";
         this.cashoutTrigger++;
         this.randomEnabled = false;
@@ -117,17 +122,18 @@ export const useMinesStore = defineStore("mines", {
       this.randomEnabled = false;
       this.randomTrigger = 0;
       this.cashoutTrigger = 0;
+      this.lastWin = 0; // clear frozen value for next round
 
       if (this.auto.enabled) {
         this.auto.currentRound++;
-        this.auto.running = false; // wait for next bet
+        this.auto.running = false;
         if (this.auto.currentRound >= this.auto.roundsPlanned) {
-          this.auto.enabled = false; // finished planned rounds
+          this.auto.enabled = false;
         }
       }
     },
 
-    /* stake helpers --------------------------------------------------- */
+    /* stake helpers ----------------------------------------------- */
     increaseBet() {
       this.betValue = parseFloat((this.betValue + 0.1).toFixed(2));
     },
