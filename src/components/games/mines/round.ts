@@ -1,20 +1,16 @@
 import { defineStore } from "pinia";
 
 /**
- * Per-round reactive state (number of tiles revealed, etc.).
- * Other modules (multiplier, auto-bet, cash-out) can subscribe
- * without coupling to board internals.
+ * Per-round reactive state (revealed count, finished flag, …)
  */
 export const useMinesRound = defineStore("minesRound", {
   state: () => ({
-    /** Total tiles on the board for the current round.        */
     totalTiles: 0,
-    /** How many tiles the player has revealed so far.         */
     revealedTiles: 0,
+    finished: false, // ⬅️  new
   }),
 
   getters: {
-    /** Progress percentage [0-100] for the header bar. */
     progressPercent: (s) =>
       s.totalTiles === 0
         ? 0
@@ -22,23 +18,23 @@ export const useMinesRound = defineStore("minesRound", {
   },
 
   actions: {
-    /** Call once when a new board is generated. */
-    startRound(rows: number, cols: number) {
-      this.totalTiles = rows * cols;
+    startRound(r: number, c: number) {
+      this.totalTiles = r * c;
       this.revealedTiles = 0;
+      this.finished = false;
     },
-    /** Call after every successful tile click (safe or bomb). */
     revealOne() {
       this.revealedTiles++;
     },
-    /** Call when the engine reveals everything at round-end. */
+    /** mark round ended (called on explosion *or* manual cash-out) */
     revealAll() {
       this.revealedTiles = this.totalTiles;
+      this.finished = true;
     },
-    /** Optional helper for a hard reset (e.g., leaving game). */
     reset() {
       this.totalTiles = 0;
       this.revealedTiles = 0;
+      this.finished = false;
     },
   },
 });

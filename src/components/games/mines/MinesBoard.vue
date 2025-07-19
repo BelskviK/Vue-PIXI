@@ -11,6 +11,7 @@ import { useMinesSettings } from "@/components/games/mines/settings";
 import { useMinesRound } from "@/components/games/mines/round";
 import { useMinesStore } from "@/components/games/mines/Store";
 import { useUserStore } from "@/stores/user";
+import { calcMultiplier } from "@/components/games/mines/math";
 
 /* props */
 interface Props {
@@ -22,7 +23,7 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-/* pixi */
+/* PIXI */
 const container = ref<HTMLDivElement | null>(null);
 let app: Application;
 let resizeObserver: ResizeObserver;
@@ -30,9 +31,9 @@ let resizeObserver: ResizeObserver;
 /* engine & tiles */
 let engine: MinesEngine;
 const tiles = new Map<number, Tile>();
-const BASE_W = props.tileWidth ?? 64,
-  BASE_H = props.tileHeight ?? 48,
-  GAP = props.padding ?? 10;
+const BASE_W = props.tileWidth ?? 64;
+const BASE_H = props.tileHeight ?? 48;
+const GAP = props.padding ?? 10;
 
 /* timers */
 let explodeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -40,26 +41,26 @@ let idleTimer: ReturnType<typeof setTimeout> | null = null;
 let cashoutTimer: ReturnType<typeof setTimeout> | null = null;
 
 /* stores */
-const settings = useMinesSettings(),
-  round = useMinesRound(),
-  ui = useMinesStore(),
-  user = useUserStore();
+const settings = useMinesSettings();
+const round = useMinesRound();
+const ui = useMinesStore();
+const wallet = useUserStore();
 const boardActive = computed(() => ui.boardActive);
 
 /* helpers */
-function clearTimer(t: ReturnType<typeof setTimeout> | null) {
+function clear(t: ReturnType<typeof setTimeout> | null) {
   if (t) clearTimeout(t);
 }
 function clearAllTimers() {
-  clearTimer(explodeTimer);
+  clear(explodeTimer);
   explodeTimer = null;
-  clearTimer(idleTimer);
+  clear(idleTimer);
   idleTimer = null;
-  clearTimer(cashoutTimer);
+  clear(cashoutTimer);
   cashoutTimer = null;
 }
 function scheduleIdleRestart() {
-  clearTimer(idleTimer);
+  clear(idleTimer);
   idleTimer = setTimeout(makeNewGame, 30_000);
 }
 
@@ -71,17 +72,21 @@ function makeNewGame() {
   firstSafe = false;
   drawBoard();
 }
+
+/* board drawing */
 function drawBoard() {
   if (!container.value) return;
   app.stage.removeChildren();
   tiles.clear();
+
   const cssW = container.value.clientWidth,
     cssH = container.value.clientHeight;
-  const boardW = props.cols * BASE_W + (props.cols - 1) * GAP,
-    boardH = props.rows * BASE_H + (props.rows - 1) * GAP;
+  const boardW = props.cols * BASE_W + (props.cols - 1) * GAP;
+  const boardH = props.rows * BASE_H + (props.rows - 1) * GAP;
   const scale = Math.min(cssW / boardW, cssH / boardH);
   const offX = (cssW - boardW * scale) / 2,
     offY = (cssH - boardH * scale) / 2;
+
   for (let r = 0; r < props.rows; r++)
     for (let c = 0; c < props.cols; c++) {
       const idx = r * props.cols + c;
@@ -107,24 +112,30 @@ function applyDim() {
 
 /* gameplay */
 let firstSafe = false;
+
 function handleTileClick(idx: number) {
   if (!boardActive.value) return;
   if (engine.exploded || engine.isRevealed(idx)) return;
-  const res = engine.reveal(idx);
+
+  const result = engine.reveal(idx);
   const tile = tiles.get(idx)!;
-  round.revealOne();
-  if (res === "safe") {
+
+  if (result === "safe") {
+    round.revealOne(); // ✅ count only safe reveals
     tile.setKind(TileType.StarGold);
+
     if (!firstSafe) {
       firstSafe = true;
       ui.activateCashout();
-      clearTimer(idleTimer);
+      clear(idleTimer);
     }
   } else {
+    // bomb
     tile.setKind(TileType.Explosion);
     finishByExplosion();
   }
 }
+
 function revealAllTiles() {
   engine.revealAll().forEach((st, idx) => {
     const t = tiles.get(idx)!;
@@ -133,28 +144,36 @@ function revealAllTiles() {
     else if (st === "hidden") t.revealFinal(TileType.StarBlue);
   });
 }
+
 function finishByExplosion() {
   revealAllTiles();
+  round.revealAll(); // mark finished (freezes multiplier)
   ui.forceCashoutInactive();
-  clearTimer(idleTimer);
+  clear(idleTimer);
   explodeTimer = setTimeout(makeNewGame, 5_000);
 }
+
 function finishByCashout() {
   revealAllTiles();
+  round.revealAll(); // mark finished
   ui.forceCashoutInactive();
+
+  const win =
+    ui.betValue * calcMultiplier(settings.minesCount, round.revealedTiles);
   cashoutTimer = setTimeout(() => {
-    user.updateBalance(parseFloat((user.balance + ui.cashOut).toFixed(2)));
+    wallet.updateBalance(parseFloat((wallet.balance + win).toFixed(2)));
     makeNewGame();
   }, 5_000);
 }
+
 /* RANDOM support */
 function revealRandomTile() {
   if (!boardActive.value) return;
-  const candidates: number[] = [];
+  const options: number[] = [];
   for (let i = 0; i < props.rows * props.cols; i++)
-    if (!engine.isRevealed(i)) candidates.push(i);
-  if (candidates.length === 0) return;
-  const idx = candidates[Math.floor(Math.random() * candidates.length)];
+    if (!engine.isRevealed(i)) options.push(i);
+  if (options.length === 0) return;
+  const idx = options[Math.floor(Math.random() * options.length)];
   handleTileClick(idx);
 }
 
@@ -185,17 +204,15 @@ watch(
   () => ui.status,
   (s) => {
     if (s === "cashoutInactive" && !firstSafe) scheduleIdleRestart();
-    else clearTimer(idleTimer);
+    else clear(idleTimer);
   }
 );
-/* cash-out trigger */
 watch(
   () => ui.cashoutTrigger,
   (n, o) => {
     if (n > o) finishByCashout();
   }
 );
-/* random trigger */
 watch(
   () => ui.randomTrigger,
   (n, o) => {
