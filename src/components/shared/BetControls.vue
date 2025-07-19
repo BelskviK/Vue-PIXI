@@ -51,7 +51,8 @@ const betValue = ref(props.maxBet ?? 0);
 
 /* reactive flags ------------------------------------------------------ */
 const status = computed(() => store.status as string);
-const autoActive = computed(() => store.auto?.enabled ?? false);
+const autoEnabled = computed(() => store.auto?.enabled ?? false);
+const autoRunning = computed(() => store.auto?.running ?? false);
 const autoLocked = computed(() => status.value !== "betActive");
 
 /* emit bridge --------------------------------------------------------- */
@@ -71,7 +72,7 @@ function dec() {
 }
 
 function onBetClick() {
-  store.handleClick?.(); // some stores may not expose this
+  store.handleClick?.();
   emit("place:bet");
 }
 
@@ -79,22 +80,18 @@ function onBetClick() {
 const modalOpen = ref(false);
 
 function toggleAuto() {
-  if (autoLocked.value) return;
+  if (autoLocked.value) return; // round running → ignore click
 
-  /* first click when Auto inactive → open settings */
-  if (!autoActive.value && autoCfg.value) {
+  /* Always (re-)open the settings when Auto isn’t running yet */
+  if (!autoRunning.value && autoCfg.value) {
     modalOpen.value = true;
-    return;
   }
-
-  /* otherwise switch off (only if store has auto) */
-  if (store.auto) store.auto.enabled = false;
-  emit("toggle:auto", false);
+  /* -- do NOT flip the footer checkbox here -- */
 }
 
-function handleAutoSubmit() {
-  /* store.setAutoConditions is defined for mines (others safely ignored) */
-  store.setAutoConditions?.({});
+function handleAutoSubmit(payload?: any) {
+  /* store setter exists only on games that support auto */
+  if (payload) store.setAutoConditions?.(payload);
   emit("toggle:auto", true);
   modalOpen.value = false;
 }
@@ -105,7 +102,7 @@ function handleAutoSubmit() {
     v-if="showControls !== false"
     :class="[
       classes,
-      'w-full   flex items-center justify-center shadow-inner rounded-xl',
+      'w-full flex items-center justify-center shadow-inner rounded-xl',
     ]"
   >
     <div
@@ -123,7 +120,8 @@ function handleAutoSubmit() {
       <div class="flex flex-row justify-between w-[300px]">
         <BetAuto
           v-if="autoCfg"
-          :active="autoActive"
+          :running="autoRunning"
+          :ready="autoEnabled"
           :disabled="autoLocked"
           @toggle="toggleAuto"
         />

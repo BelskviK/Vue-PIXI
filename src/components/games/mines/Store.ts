@@ -1,10 +1,12 @@
+// src/components/games/mines/Store.ts
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/user";
 
 export type ButtonStatus = "betActive" | "cashoutInactive" | "cashoutActive";
 
 export interface AutoState {
-  enabled: boolean;
+  enabled: boolean; // user ticked “Auto Game”
+  running: boolean; // first bet already placed
   roundsPlanned: number;
   currentRound: number;
   stopLoss: number | null;
@@ -22,33 +24,40 @@ export const useMinesStore = defineStore("mines", {
 
     /* CASH-OUT helpers */
     cashoutTrigger: 0,
-    auto: {
+
+    /* AUTO-PLAY */
+    auto: <AutoState>{
       enabled: false,
+      running: false,
       roundsPlanned: 3,
       currentRound: 0,
       stopLoss: null,
       takeProfit: null,
-    } as AutoState,
+    },
   }),
 
   getters: {
     boardActive: (s) => s.status !== "betActive",
-    autoActive: (s) => s.auto.enabled,
+    /** true when red countdown should show */
+    autoActive: (s) => s.auto.running,
   },
 
   actions: {
+    /* ---------- called by modal ---------- */
     setAutoConditions(cfg: {
       rounds: number;
       stopLoss?: number | null;
       takeProfit?: number | null;
     }) {
       this.auto.enabled = true;
+      this.auto.running = false; // will start on first bet
       this.auto.currentRound = 0;
       this.auto.roundsPlanned = cfg.rounds;
       this.auto.stopLoss = cfg.stopLoss ?? null;
       this.auto.takeProfit = cfg.takeProfit ?? null;
     },
 
+    /* ---------- main BET / CASH-OUT button ---------- */
     handleClick() {
       const wallet = useUserStore();
 
@@ -60,6 +69,8 @@ export const useMinesStore = defineStore("mines", {
         );
         this.status = "cashoutInactive";
         this.randomEnabled = true;
+
+        if (this.auto.enabled) this.auto.running = true; // start red countdown
         return;
       }
 
@@ -71,7 +82,7 @@ export const useMinesStore = defineStore("mines", {
       }
     },
 
-    /* board delegates */
+    /* ---------- board delegates ---------- */
     activateCashout() {
       if (this.status === "cashoutInactive") this.status = "cashoutActive";
     },
@@ -85,7 +96,7 @@ export const useMinesStore = defineStore("mines", {
       if (this.randomEnabled) this.randomTrigger++;
     },
 
-    /* round reset */
+    /* ---------- round reset ---------- */
     startNewRound() {
       this.status = "betActive";
       this.randomEnabled = false;
@@ -94,13 +105,14 @@ export const useMinesStore = defineStore("mines", {
 
       if (this.auto.enabled) {
         this.auto.currentRound++;
-        // Stop auto if we've done the planned rounds
+        this.auto.running = false; // wait for next bet
         if (this.auto.currentRound >= this.auto.roundsPlanned) {
-          this.auto.enabled = false;
+          this.auto.enabled = false; // finished planned rounds
         }
       }
     },
 
+    /* stake helpers */
     increaseBet() {
       this.betValue = parseFloat((this.betValue + 0.1).toFixed(2));
     },
