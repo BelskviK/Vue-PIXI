@@ -1,12 +1,17 @@
+<template>
+  <div ref="container" class="w-full h-[80%] select-none touch-none" />
+</template>
+
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, defineProps } from "vue";
+import { ref, onMounted, onUnmounted, watch, defineProps, computed } from "vue";
 import { Application } from "pixi.js";
 import { Tile, TileType } from "./Tile";
-import { loadSvgMap } from "./svgAssets";
 import { MinesEngine } from "@/components/games/mines/Engine";
 import { useMinesSettings } from "@/components/games/mines/settings";
+import { useMinesRound } from "@/components/games/mines/round";
+import { useMinesStore } from "@/components/games/mines/Store";
 
-/* props --------------------------------------------------- */
+/* ─── props ─── */
 interface Props {
   rows: number;
   cols: number;
@@ -16,12 +21,12 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-/* PIXI bootstrap ----------------------------------------- */
+/* ─── PIXI bootstrap ─── */
 const container = ref<HTMLDivElement | null>(null);
 let app: Application;
 let resizeObserver: ResizeObserver;
 
-/* bookkeeping -------------------------------------------- */
+/* ─── bookkeeping ─── */
 let engine: MinesEngine;
 const tiles = new Map<number, Tile>();
 
@@ -29,16 +34,24 @@ const BASE_W = props.tileWidth ?? 64;
 const BASE_H = props.tileHeight ?? 48;
 const GAP = props.padding ?? 10;
 
-/* helpers ------------------------------------------------- */
+/* ─── stores ─── */
 const settings = useMinesSettings();
+const round = useMinesRound();
+const uiStore = useMinesStore();
+
+/** Board is clickable only after the bet is placed */
+const boardActive = computed(() => uiStore.boardActive);
+
+/* ─── helpers ─── */
 function makeNewGame() {
   engine = new MinesEngine(props.rows, props.cols, settings.minesCount);
+  round.startRound(props.rows, props.cols);
+  uiStore.startNewRound();
   drawBoard();
 }
 
 function drawBoard() {
   if (!container.value) return;
-
   app.stage.removeChildren();
   tiles.clear();
 
@@ -59,7 +72,6 @@ function drawBoard() {
         offX + c * (BASE_W + GAP) * scale,
         offY + r * (BASE_H + GAP) * scale
       );
-
       t.eventMode = "static";
       t.cursor = "pointer";
       t.on("pointertap", () => handleTileClick(idx));
@@ -70,13 +82,22 @@ function drawBoard() {
   }
 
   app.renderer.resize(cssW, cssH);
+  applyDimState(); // set initial contrast
+}
+
+function applyDimState() {
+  /* Invert: dim when NOT active, brighten when active */
+  const dim = !boardActive.value;
+  tiles.forEach((t) => t.setDimmed(dim));
 }
 
 function handleTileClick(idx: number) {
+  if (!boardActive.value) return;
   if (engine.exploded || engine.isRevealed(idx)) return;
 
   const result = engine.reveal(idx);
   const tile = tiles.get(idx)!;
+  round.revealOne();
 
   if (result === "safe") tile.setKind(TileType.StarGold);
   else if (result === "explosion") {
@@ -93,13 +114,14 @@ function revealAll() {
     else if (state === "hidden") t.revealFinal(TileType.StarBlue);
   });
 }
+
+/* ─── lifecycle ─── */
 onMounted(async () => {
-  /* 🚀 — 100 % more pixels */
   app = new Application();
   await app.init({
-    resolution: Math.ceil(window.devicePixelRatio * 2), // doubled DPI
+    resolution: Math.ceil(window.devicePixelRatio * 2),
     backgroundAlpha: 0,
-    autoDensity: true, // ties logical & physical pixels
+    autoDensity: true,
     antialias: true,
   });
   container.value?.appendChild(app.canvas);
@@ -114,11 +136,9 @@ onUnmounted(() => {
   app.destroy({ removeView: true }, { children: true, texture: true });
 });
 
+/* ─── watchers ─── */
 watch(() => settings.minesCount, makeNewGame);
+watch(boardActive, applyDimState); // update contrast on state change
 </script>
-
-<template>
-  <div ref="container" class="w-full h-[80%] select-none touch-none" />
-</template>
 
 <style scoped></style>

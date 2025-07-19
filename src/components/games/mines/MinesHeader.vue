@@ -1,8 +1,10 @@
 <template>
   <div class="w-full">
+    <!-- ───── first row (dropdown + multiplier) ───── -->
     <div
       class="flex flex-row w-full h-[22px] salign-center justify-center bg-[#15171969] rounded-[12px]"
     >
+      <!-- left: mines selector -->
       <div class="flex w-full align-center">
         <div class="relative" ref="wrapper">
           <button
@@ -12,6 +14,7 @@
             <span class="flex-1 text-center font-normal truncate">
               Mines : {{ minesCount }}
             </span>
+            <!-- chevron -->
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="w-4 h-4 ml-1"
@@ -28,6 +31,7 @@
             </svg>
           </button>
 
+          <!-- dropdown list -->
           <div
             v-if="isOpen"
             ref="dropdown"
@@ -51,6 +55,8 @@
           </div>
         </div>
       </div>
+
+      <!-- right: next multiplier (placeholder for now) -->
       <div class="flex w-full align-center justify-end">
         <div
           class="flex items-center justify-center w-[100px] h-[20px] rounded-3xl shadow text-black text-[12px] px-2 transition-transform duration-100 active:translate-y-[2px] shadow-[1px_1px_0_rgba(0,0,0,0.3),inset_1px_1px_0_rgba(255,255,255,0.2)] border border-black bg-[#ffc107]"
@@ -62,7 +68,7 @@
       </div>
     </div>
 
-    <!-- Reduced gap: negative 1px top margin -->
+    <!-- ───── progress bar ───── -->
     <div
       role="progressbar"
       :aria-valuenow="minesProgress"
@@ -73,7 +79,7 @@
       <div
         class="h-full bg-[#28a745]"
         :style="{ width: minesProgress + '%' }"
-      ></div>
+      />
     </div>
   </div>
 </template>
@@ -81,9 +87,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useMinesSettings } from "@/components/games/mines/settings";
+import { useMinesRound } from "@/components/games/mines/round"; // 🆕
 
+/* ─ dropdown logic ─ */
 const settings = useMinesSettings();
-
 const isOpen = ref(false);
 const numbers = Array.from({ length: 24 }, (_, i) => i + 1); // 1-24 bombs
 const minesCount = computed(() => settings.minesCount);
@@ -96,7 +103,7 @@ function selectMines(n: number) {
   isOpen.value = false;
 }
 
-/* --- outside-click helper (unchanged) --- */
+/* ─ outside-click helper ─ */
 const wrapper = ref<HTMLElement | null>(null);
 function handleClickOutside(e: MouseEvent) {
   if (wrapper.value && !wrapper.value.contains(e.target as Node))
@@ -107,13 +114,12 @@ onBeforeUnmount(() =>
   document.removeEventListener("click", handleClickOutside)
 );
 
-/* dummy multiplier / progress bar – kept to preserve existing UI */
+/* ─ real progress bar data ─ */
+const round = useMinesRound(); // 🆕
+const minesProgress = computed(() => round.progressPercent);
+
+/* ─ placeholder multiplier (static for now) ─ */
 const nextMultiplier = ref(1.1);
-const minesProgress = ref(0);
-setInterval(
-  () => (minesProgress.value = Math.min(100, minesProgress.value + 5)),
-  500
-);
 </script>
 
 <style scoped></style>

@@ -13,8 +13,10 @@
 
 <script setup lang="ts">
 import MinesHeader from "@/components/games/mines/MinesHeader.vue";
-import MinesFooter from "@/components/games/mines/MinesFooter.vue";
+
 import MinesBoard from "@/components/games/mines/MinesBoard.vue";
+
+import MinesFooter from "@/components/games/mines/MinesFooter.vue";
 </script>
 
 <style scoped></style>
