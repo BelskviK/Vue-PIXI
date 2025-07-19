@@ -53,7 +53,7 @@ const betValue = ref(props.maxBet ?? 0);
 const status = computed(() => store.betButtonStatus as string);
 const autoEnabled = computed(() => store.auto?.enabled ?? false);
 const autoRunning = computed(() => store.auto?.running ?? false);
-const roundLocked = computed(() => store.status !== "betActive"); // round in progress
+const roundLocked = computed(() => store.status !== "betActive"); // 🔒
 const betAutoDisabled = computed(() => roundLocked.value || !autoEnabled.value);
 
 /* emit bridge --------------------------------------------------------- */
@@ -107,6 +107,7 @@ function handleAutoSubmit(payload?: any) {
       <!-- stake -->
       <BetInput
         :value="betValue"
+        :disabled="roundLocked"
         @increase="inc"
         @decrease="dec"
         :classes="theme.btn"

@@ -88,12 +88,6 @@ const gradientStyle = computed(() => {
       };
 });
 
-/* live cash-out amount
-   ─────────────────────
-   • cashoutActive   → real-time multiplier value
-   • cashoutInactive → frozen lastWin stored in the store
-   • anything else   → "0.00"
-*/
 const liveCash = computed(() => {
   if (props.status === "cashoutActive") {
     const mult = calcMultiplier(settings.minesCount, round.revealedTiles);

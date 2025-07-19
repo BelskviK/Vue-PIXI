@@ -1,8 +1,12 @@
 <template>
-  <div class="relative">
+  <!-- wrapper fades when locked -->
+  <div :class="['relative', disabled ? 'opacity-50' : '']">
     <!-- Main BetInput component -->
     <div
-      class="flex items-center justify-between w-[300px] h-[50px] border border-[rgba(0,0,0,0.53)] rounded-[30px] shadow-[inset_1px_1px_#fff1cd33] px-3"
+      :class="[
+        'flex items-center justify-between w-[300px] h-[50px] border border-[rgba(0,0,0,0.53)] rounded-[30px] shadow-[inset_1px_1px_#fff1cd33] px-3',
+        disabled ? 'pointer-events-none' : '',
+      ]"
     >
       <!-- text + readonly input (opens num-pad) -->
       <span class="flex flex-col items-start w-full sm:relative static">
@@ -109,15 +113,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, toRefs } from "vue";
 import { useMinesStore } from "@/components/games/mines/Store";
 import iconBetVariant from "@/assets/icon-bet-variant.svg";
 import iconTick from "@/assets/icon-calculator-tick.svg";
 
-const props = withDefaults(defineProps<{ classes?: string }>(), {
-  classes: "#ffffff",
-});
-const { classes } = props;
+const props = withDefaults(
+  defineProps<{ classes?: string; disabled?: boolean }>(),
+  { classes: "#ffffff", disabled: false }
+);
+
+// keep reactivity on props
+const { classes, disabled } = toRefs(props);
 
 const store = useMinesStore();
 
@@ -150,12 +157,14 @@ const toggleBtn = ref<HTMLElement | null>(null);
 const dropdown = ref<HTMLElement | null>(null);
 const numPad = ref<HTMLElement | null>(null);
 
-/* ─── UI helpers ─── */
+/* ─── UI helpers (guarded by disabled) ─── */
 function toggleDropdown() {
+  if (disabled.value) return;
   isOpen.value = !isOpen.value;
   if (isOpen.value) numPadOpen.value = false;
 }
 function openNumPad() {
+  if (disabled.value) return;
   numPadOpen.value = true;
   inputValue.value = "";
   isOpen.value = false;
@@ -166,22 +175,27 @@ function closeAll() {
 }
 
 function selectAmount(a: string) {
+  if (disabled.value) return;
   setBet(a);
 }
 function increase() {
+  if (disabled.value) return;
   setBet((store.betValue + 0.1).toFixed(2));
 }
 function decrease() {
+  if (disabled.value) return;
   const next = store.betValue - 0.1;
   setBet((next >= 0.1 ? next : store.betValue).toFixed(2));
 }
 
 function pressKey(k: string) {
+  if (disabled.value) return;
   if (k === "back") inputValue.value = inputValue.value.slice(0, -1);
   else if (k === "." && inputValue.value.includes(".")) return;
   else inputValue.value += k;
 }
 function confirmInput() {
+  if (disabled.value) return;
   let v = parseFloat(inputValue.value);
   if (isNaN(v) || v === 0) v = 0.1;
   setBet(v.toFixed(2));
@@ -219,4 +233,9 @@ watch(
     selectedAmount.value = inputValue.value;
   }
 );
+
+/* ─── close / reopen UI when disabled toggles ─── */
+watch(disabled, (d) => {
+  if (d) closeAll(); // close any open pop-ups while locked
+});
 </script>
