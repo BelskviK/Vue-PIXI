@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, defineProps, computed } from "vue";
+import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { Application } from "pixi.js";
 import { Tile, TileType } from "./Tile";
 import { MinesEngine } from "@/components/games/mines/Engine";
