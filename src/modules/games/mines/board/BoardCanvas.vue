@@ -72,7 +72,7 @@ function deselectOnePreselection() {
 
 /* timers */
 let explodeTimer: ReturnType<typeof setTimeout> | null = null;
-let idleTimer: ReturnType<typeof setTimeout> | null = null;
+let idleTimer: ReturnType<typeof setTimeout> | null = null; // ↔ auto-cash-out
 let settleTimer: ReturnType<typeof setTimeout> | null = null;
 
 /* misc */
@@ -88,6 +88,14 @@ function clearAllTimers() {
   [explodeTimer, idleTimer, settleTimer].forEach(clear);
   explodeTimer = idleTimer = settleTimer = null;
 }
+
+/* schedule auto-cash-out after 30 s of no explosion */
+function scheduleAutoCashout() {
+  clear(idleTimer);
+  idleTimer = setTimeout(finishByCashout, 30_000);
+}
+
+/* fallback restart when player never found a safe tile */
 function scheduleIdleRestart() {
   clear(idleTimer);
   idleTimer = setTimeout(makeNewGame, 30_000);
@@ -174,10 +182,13 @@ function handleTileClick(idx: number) {
     round.revealOne();
     tile.setKind(TileType.StarGold);
 
+    /* first safe → player can cash-out */
+    clear(idleTimer);
+    scheduleAutoCashout();
+
     if (!firstSafe) {
       firstSafe = true;
       ui.activateCashout();
-      clear(idleTimer);
     }
   } else {
     tile.setKind(TileType.Explosion);
@@ -218,16 +229,17 @@ function revealAllTiles() {
 }
 
 function finishByExplosion() {
-  /* classic & auto both flip the rest */
+  clearAllTimers();
   revealAllTiles();
 
   round.revealAll();
   ui.forceCashoutInactive();
-  clear(idleTimer);
-  explodeTimer = setTimeout(makeNewGame, 4_000);
+  explodeTimer = setTimeout(makeNewGame, 2_000);
 }
 
 function finishByCashout() {
+  clearAllTimers();
+
   const bombs = settings.minesCount;
   const kSafe = round.revealedTiles;
   const maxSafe = TOTAL_TILES - bombs;
@@ -240,13 +252,16 @@ function finishByCashout() {
 
   const win = parseFloat((ui.betValue * nextMult).toFixed(2));
 
+  ui.lastWin = win; // let UI show the payout
   ui.forceCashoutInactive();
   round.revealAll();
 
+  /* reveal board, credit balance, start new game */
+  revealAllTiles();
   settleTimer = setTimeout(() => {
     wallet.updateBalance(parseFloat((wallet.balance + win).toFixed(2)));
     makeNewGame();
-  }, 1_000);
+  }, 2_000);
 }
 
 /* ---------- lifecycle ---------- */
@@ -282,16 +297,16 @@ watch(preselectMode, (v) => {
   if (!v) clearPreselection();
   applyDim();
 });
-watch(
-  () => ui.status,
-  (s) => {
-    /* 🔑 keep greens after first bet in AUTO */
-    if (s !== "betActive" && !ui.auto.enabled) clearPreselection();
 
-    if (s === "cashoutInactive" && !firstSafe) scheduleIdleRestart();
-    else clear(idleTimer);
+/* cash-out button triggered in UI store */
+watch(
+  () => ui.cashoutTrigger,
+  (n, o) => {
+    if (n > o) finishByCashout();
   }
 );
+
+/* random helpers / undo */
 watch(
   () => ui.randomTrigger,
   (n, o) => {

@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/user";
+import { calcMultiplier } from "@/modules/games/mines/math";
 import { useMinesSettings } from "@/modules/games/mines/store/settings";
 import { useMinesRound } from "@/modules/games/mines/store/round";
-import { calcMultiplier } from "@/modules/games/mines/math";
 
 export type ButtonStatus = "betActive" | "cashoutInactive" | "cashoutActive";
 
@@ -48,10 +48,7 @@ export const useMinesUI = defineStore("mines", {
     boardActive: (s) => s.status !== "betActive",
     autoActive: (s) => s.auto.running,
     dropdownLocked: (s) => s.status !== "betActive" || s.auto.enabled,
-
-    /* 🟢 FIX: RANDOM stays enabled whenever Auto is armed */
     randomButtonEnabled: (s) => s.randomEnabled || s.auto.enabled,
-
     betButtonStatus: (s): ButtonStatus | "betInactive" =>
       s.auto.enabled ? "betInactive" : s.status,
   },
@@ -75,8 +72,6 @@ export const useMinesUI = defineStore("mines", {
     /* ========== MAIN BET / CASH-OUT BUTTON ========== */
     handleClick() {
       const wallet = useUserStore();
-      const settings = useMinesSettings();
-      const round = useMinesRound();
 
       /* ---- place bet ---- */
       if (this.status === "betActive") {
@@ -93,17 +88,13 @@ export const useMinesUI = defineStore("mines", {
         return;
       }
 
-      /* ---- cash-out ---- */
+      /* ---- cash-out request ---- */
       if (this.status === "cashoutActive") {
-        const mult = calcMultiplier(settings.minesCount, round.revealedTiles);
-        const win = parseFloat((this.betValue * mult).toFixed(2));
-
-        wallet.updateBalance(parseFloat((wallet.balance + win).toFixed(2)));
-
-        this.lastWin = win;
+        /* do NOT settle here – BoardCanvas calculates NEXT multiplier
+           and credits the win after revealing the board */
         this.status = "cashoutInactive";
-        this.cashoutTrigger++;
         this.randomEnabled = false;
+        this.cashoutTrigger++;
       }
     },
 
