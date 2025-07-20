@@ -1,15 +1,14 @@
 # Master TODO Checklist
 
-- [ ] **MinesFooter.vue:** ensure left‑side auto‑toggle SVG rotates and clears tiles properly.
-
-- [ ] **Header.vue:** highlight the active game in the switcher (change SVG fill for the selected game).
-
-- [ ] **Header.vue:** replace “How to Play” button with a shared modal system; modal content per game lives in `src/config/gameConfigs.ts`.
-
-- [ ] **gameConfigs.ts:** add burger‑menu hover + dropdown with public links.
+- [ ✅] **MinesFooter.vue:** ensure left‑side auto‑toggle SVG rotates and clears tiles properly.
+- [ ✅ ] **BetInput / NumPad / ValuePicker:** pull their colours dynamically from config.
 
 - [ ] **Auto Game:** honour all 3 stop conditions (X rounds, balance ≤ target, balance ≥ target).
-- [ ] **BetInput / NumPad / ValuePicker:** pull their colours dynamically from config.
+- [ ] **ADDING component** label wich shows gained or lost money.
+
+- [ ] **Header.vue:** highlight the active game in the switcher (change SVG fill for the selected game).
+- [ ] **Header.vue:** replace “How to Play” button with a shared modal system; modal content per game lives in `src/config/gameConfigs.ts`.
+- [ ] **gameConfigs.ts:** add burger‑menu hover + dropdown with public links.
 
 - [ ] **Global:** remove any lingering `defineProps` warnings.
 - [ ] when selected mines = 1 multiplier rounds 24 to 500

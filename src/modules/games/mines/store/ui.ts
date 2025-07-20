@@ -55,11 +55,19 @@ export const useMinesUI = defineStore("mines", {
   }),
 
   getters: {
+    /** whether an auto-sequence is in flight */
     autoGameInProgress: (s) => s.auto.process,
+
+    /** disable board clicks when no longer in betActive */
     boardActive: (s) => s.status !== "betActive",
+
+    /** cash-out button enabled flag for UI */
     autoActive: (s) => s.auto.running,
+
+    /** lock game-selector dropdown while in round */
     dropdownLocked: (s) => s.status !== "betActive" || s.auto.enabled,
 
+    /** enable the “random pick” button */
     randomButtonEnabled: (s) =>
       !s.auto.process &&
       ((s.auto.enabled && s.status === "betActive" && !s.auto.running) ||
@@ -67,18 +75,18 @@ export const useMinesUI = defineStore("mines", {
           (s.status === "cashoutInactive" || s.status === "cashoutActive") &&
           s.randomEnabled)),
 
+    /** main bet-button status for controls */
     betButtonStatus: (s): ButtonStatus | "betInactive" =>
       s.auto.enabled ? "betInactive" : s.status,
 
     /**
-     * Next multiplier: once auto-process has begun, return the frozen value;
-     * otherwise compute dynamically.
+     * Preview multiplier: if auto has started, freeze that first value;
+     * otherwise recalc dynamically based on revealed/preselected tiles.
      */
     nextMultiplier(): number {
       const settings = useMinesSettings();
       const round = useMinesRound();
 
-      // freeze override
       if (this.auto.process && this.frozenNextMultiplier !== null) {
         return this.frozenNextMultiplier;
       }
@@ -105,7 +113,8 @@ export const useMinesUI = defineStore("mines", {
     },
 
     /**
-     * Bet button opacity: 1 when auto running or manual, 0.5 when auto recently stopped
+     * Visual opacity for bet button when auto just stopped vs.
+     * fully interactive.
      */
     betButtonOpacity(): number {
       return this.auto.process || this.auto.enabled ? 1 : 0.5;
@@ -127,18 +136,12 @@ export const useMinesUI = defineStore("mines", {
       this.auto.stopRequested = false;
     },
 
-    /**
-     * Called by BetAuto button click: defer stopping until end of round
-     */
     requestStopAutoGame() {
       if (this.auto.process) {
         this.auto.stopRequested = true;
       }
     },
 
-    /**
-     * Internal: immediately halt auto-play
-     */
     stopAutoGame() {
       this.auto.process = false;
       this.auto.running = false;
@@ -179,10 +182,15 @@ export const useMinesUI = defineStore("mines", {
     },
 
     activateCashout() {
-      if (this.status === "cashoutInactive") this.status = "cashoutActive";
+      if (this.status === "cashoutInactive") {
+        this.status = "cashoutActive";
+      }
     },
+
     forceCashoutInactive() {
-      if (this.status !== "betActive") this.status = "cashoutInactive";
+      if (this.status !== "betActive") {
+        this.status = "cashoutInactive";
+      }
       this.randomEnabled = false;
     },
 
@@ -197,9 +205,7 @@ export const useMinesUI = defineStore("mines", {
     },
 
     startNewRound() {
-      // clear frozen multiplier
       this.frozenNextMultiplier = null;
-
       this.status = "betActive";
       this.randomEnabled = false;
       this.randomTrigger = 0;
@@ -207,13 +213,10 @@ export const useMinesUI = defineStore("mines", {
       this.undoPreselectTrigger = 0;
       this.lastWin = 0;
 
-      // advance rounds if auto
       if (this.auto.enabled) {
         this.auto.currentRound++;
         this.auto.running = false;
       }
-
-      // after board reset, handle stop request or completion
       if (
         this.auto.stopRequested ||
         this.auto.currentRound >= this.auto.roundsPlanned
@@ -235,10 +238,12 @@ export const useMinesUI = defineStore("mines", {
     increaseBet() {
       this.betValue = parseFloat((this.betValue + 0.1).toFixed(2));
     },
+
     decreaseBet() {
       const nxt = parseFloat((this.betValue - 0.1).toFixed(2));
       this.betValue = nxt >= 0.1 ? nxt : this.betValue;
     },
+
     setBetValue(v: number) {
       const cap = parseFloat(useUserStore().balance.toFixed(2));
       this.betValue = v > cap ? cap : parseFloat(v.toFixed(2));

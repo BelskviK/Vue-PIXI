@@ -4,7 +4,7 @@
     class="relative w-full flex items-center px-4 shadow-md rounded-2xl text-white py-4 md:bg-black/30 bg-black/0"
   >
     <div class="flex items-center w-[50%] space-x-4">
-      <!-- game selector button -->
+      <!-- game selector -->
       <button
         @click="toggleDropdown"
         class="flex items-center justify-center w-[130px] h-[24px] rounded-3xl shadow text-white text-[12px] px-2 transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
@@ -29,7 +29,7 @@
         </svg>
       </button>
 
-      <!-- how to play button (static color) -->
+      <!-- how to play -->
       <button
         @click="openHowToPlayModal"
         class="flex items-center justify-center md:w-[150px] h-[22px] rounded-3xl shadow bg-[linear-gradient(to_bottom,_#f9a119,_#f38410)] text-black text-[12px] md:px-2 transition-transform duration-100 active:translate-y-[2px] active:shadow-inner"
@@ -45,9 +45,18 @@
       </button>
     </div>
 
-    <div class="flex justify-end items-center w-[50%] space-x-1 text-[12px]">
+    <div class="flex justify-end items-center w-[50%] space-x-2 text-[12px]">
+      <!-- live cashout label -->
+      <p
+        v-if="showLiveCash"
+        class="bg-[#15902d] text-white font-mono text-[12px] px-2 py-0.5 rounded-xl whitespace-nowrap"
+      >
+        + {{ liveCash }} USD
+      </p>
+
       <p class="font-mono">{{ balance.toLocaleString() }}</p>
       <p class="opacity-50">USD</p>
+
       <button
         @click="openMenu"
         class="p-1 rounded-full w-[24px] h-[24px] transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
@@ -71,7 +80,7 @@
       </button>
     </div>
 
-    <!-- Dropdown menu -->
+    <!-- dropdown menu -->
     <div
       v-if="dropdownOpen"
       class="absolute md:top-full top-[-650%] left-1 grid grid-cols-4 gap-1 bg-[#212226] p-4 z-50 rounded-lg"
@@ -92,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
@@ -108,17 +117,16 @@ import iconMiniRoulette from "@/assets/gameIcons/icon-mini-roulette.svg";
 import iconPlinko from "@/assets/gameIcons/icon-plinko.svg";
 import howTo from "@/assets/icon-how-to-play.svg";
 
+import { useMinesUI } from "@/modules/games/mines/store/ui";
+import { useMinesRound } from "@/modules/games/mines/store/round";
+
 interface GameType {
   name: string;
   src: string;
   routeName: string;
 }
 
-const props = defineProps<{
-  theme: {
-    btn: string;
-  };
-}>();
+const props = defineProps<{ theme: { btn: string } }>();
 const { theme } = props;
 
 const router = useRouter();
@@ -130,6 +138,7 @@ const selectedGame = ref<GameType>({
   src: iconMines,
   routeName: "Mines",
 });
+
 const gameIcons: GameType[] = [
   { name: "Dice", src: iconDice, routeName: "Dice" },
   { name: "Plinko", src: iconPlinko, routeName: "Plinko" },
@@ -148,7 +157,6 @@ const { balance } = storeToRefs(userStore);
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value;
 }
-
 function handleClickOutside(event: MouseEvent) {
   if (
     dropdownOpen.value &&
@@ -158,18 +166,13 @@ function handleClickOutside(event: MouseEvent) {
     dropdownOpen.value = false;
   }
 }
-
-onMounted(() => {
-  document.addEventListener("click", handleClickOutside);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside);
-});
+onMounted(() => document.addEventListener("click", handleClickOutside));
+onBeforeUnmount(() =>
+  document.removeEventListener("click", handleClickOutside)
+);
 
 function openHowToPlayModal() {}
 function openMenu() {}
-
 function onSelectGame(game: GameType) {
   selectedGame.value = game;
   dropdownOpen.value = false;
@@ -178,8 +181,44 @@ function onSelectGame(game: GameType) {
     params: { id: game.routeName.toLowerCase() },
   });
 }
+
+// live cashout logic
+const ui = useMinesUI();
+const round = useMinesRound();
+const showLiveCash = ref(false);
+
+const liveCash = computed(() => {
+  if (ui.status === "cashoutActive") {
+    // preview cash-out
+    return (ui.betValue * ui.nextMultiplier).toFixed(2);
+  }
+  // final win
+  return ui.lastWin.toFixed(2);
+});
+
+// on manual cash-out
+watch(
+  () => ui.cashoutTrigger,
+  (newVal, oldVal) => {
+    if (newVal > oldVal) {
+      showLiveCash.value = true;
+      setTimeout(() => (showLiveCash.value = false), 2000);
+    }
+  }
+);
+
+// on any round finish with a win (auto or manual)
+watch(
+  () => round.finished,
+  (finished) => {
+    if (finished && ui.lastWin > 0) {
+      showLiveCash.value = true;
+      setTimeout(() => (showLiveCash.value = false), 2000);
+    }
+  }
+);
 </script>
 
 <style scoped>
-/* no additional custom styles */
+/* no additional custom styles needed */
 </style>

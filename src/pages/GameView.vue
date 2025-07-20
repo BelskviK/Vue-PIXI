@@ -1,3 +1,4 @@
+// src/pages/GameView.vue
 <template>
   <div class="flex flex-col h-screen bg-[#000000]">
     <div class="flex items-center justify-center h-full w-full">
@@ -5,7 +6,7 @@
         class="relative flex flex-col w-full max-w-[970px] mx-2 h-full md:max-h-[540px] overflow-hidden rounded-xl border-0 md:border-2 md:border-solid"
         :style="wrapperStyle"
       >
-        <!-- Header: bottom on small screens, top on md+  h-[34px] ]-->
+        <!-- Header: bottom on small screens, top on md+ -->
         <Header
           :key="gameId"
           :theme="config.theme"
@@ -13,7 +14,7 @@
           class="absolute bottom-[0px] h-[34px] md:h-[32px] md:order-first md:top-0 order-last"
         />
 
-        <!-- Game content stays in middle -->
+        <!-- Game content -->
         <Suspense>
           <template #default>
             <component
@@ -28,7 +29,7 @@
           </template>
         </Suspense>
 
-        <!-- BetsControl: above header on small, below game on md+ -->
+        <!-- BetsControl -->
         <BetsControl
           v-if="config.betsControlProps.showControls !== false"
           :key="gameId"

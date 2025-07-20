@@ -18,7 +18,6 @@
       :style="gradientStyle"
     />
 
-    <!-- content -->
     <span
       :class="[
         'relative w-full px-6',
@@ -50,30 +49,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, PropType } from "vue";
+import { computed } from "vue";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
-import { useMinesSettings } from "@/modules/games/mines/store/settings";
 import iconBet from "@/assets/icon-bet.svg";
 
 const props = defineProps({
-  status: { type: String as PropType<string>, default: "" },
+  status: { type: String as () => string, default: "" },
 });
 const emit = defineEmits<{
   (e: "bet"): void;
 }>();
 
-/* stores */
 const ui = useMinesUI();
-const settings = useMinesSettings();
 
-/* flags */
 const isCashout = computed(() => props.status.includes("cashout"));
 const isDisabled = computed(
   () => props.status === "betInactive" || props.status === "cashoutInactive"
 );
 const opacityClass = computed(() => (isDisabled.value ? "opacity-50" : ""));
 
-/* gradient */
 const gradientStyle = computed(() => {
   const shadow = "inset 0 -6px 8px rgba(0,0,0,0.3)";
   return isCashout.value
@@ -89,10 +83,8 @@ const gradientStyle = computed(() => {
       };
 });
 
-/* live cash uses the UI store’s nextMultiplier for immediate preview */
 const liveCash = computed(() => {
   if (props.status === "cashoutActive") {
-    // Multiply the current bet by the preview multiplier
     return (ui.betValue * ui.nextMultiplier).toFixed(2);
   }
   if (props.status === "cashoutInactive") {
@@ -102,6 +94,8 @@ const liveCash = computed(() => {
 });
 
 function handleClick() {
-  if (!isDisabled.value) emit("bet");
+  if (!isDisabled.value) {
+    emit("bet");
+  }
 }
 </script>
