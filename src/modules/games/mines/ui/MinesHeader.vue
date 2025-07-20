@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useMinesSettings } from "@/modules/games/mines/store/settings";
 import { useMinesRound } from "@/modules/games/mines/store/round";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
@@ -119,8 +119,29 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
 /* ─── reactive UI --------------------------------------------------- */
 const progress = computed(() => round.progressPercent);
-const shownMultiplier = computed(() =>
-  ui.nextMultiplier ? `${ui.nextMultiplier.toFixed(2)}x` : "0.00x"
+// freeze shownMultiplier once auto.process=true
+const shownMultiplier = ref<string>("0.00x");
+
+// Update shownMultiplier only when auto.process is false
+watch(
+  () => ui.nextMultiplier,
+  (n) => {
+    if (!ui.auto.process) {
+      shownMultiplier.value = `${n.toFixed(2)}x`;
+    }
+  },
+  { immediate: true }
+);
+
+// When a new auto session ends, allow shownMultiplier to update again
+watch(
+  () => ui.auto.process,
+  (proc) => {
+    if (!proc) {
+      const n = ui.nextMultiplier;
+      shownMultiplier.value = `${n.toFixed(2)}x`;
+    }
+  }
 );
 
 /* pill colour – green when Auto is armed */

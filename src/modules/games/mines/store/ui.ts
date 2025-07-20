@@ -1,3 +1,4 @@
+// src/modules/games/mines/store/ui.ts
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/user";
 import {
@@ -46,6 +47,9 @@ export const useMinesUI = defineStore("mines", {
       stopLoss: null,
       takeProfit: null,
     },
+
+    /** frozen next-multiplier at Auto start */
+    frozenNextMultiplier: null as number | null,
   }),
 
   getters: {
@@ -65,12 +69,17 @@ export const useMinesUI = defineStore("mines", {
       s.auto.enabled ? "betInactive" : s.status,
 
     /**
-     * Preview of the *next* multiplier, used by the header.
-     * Respects preselection count in Auto mode.
+     * Next multiplier: once auto-process has begun, return the frozen value;
+     * otherwise compute dynamically.
      */
     nextMultiplier(): number {
       const settings = useMinesSettings();
       const round = useMinesRound();
+
+      // freeze override
+      if (this.auto.process && this.frozenNextMultiplier !== null) {
+        return this.frozenNextMultiplier;
+      }
 
       if (round.finished || round.totalTiles === 0) {
         return 0;
@@ -88,7 +97,6 @@ export const useMinesUI = defineStore("mines", {
       if (kNext <= maxSafe) {
         return calcMultiplier(bombs, kNext);
       } else {
-        // beyond safe limit, round up the *current* multiplier
         const current = calcMultiplier(bombs, safeRevealed);
         return roundUp500(current);
       }
@@ -123,14 +131,17 @@ export const useMinesUI = defineStore("mines", {
           this.randomEnabled = true;
         }
         this.lastWin = 0;
+
+        // Freeze preview when Auto actually starts
         if (this.auto.enabled) {
           this.auto.running = true;
           this.auto.process = true;
+          this.frozenNextMultiplier = this.nextMultiplier;
         }
         return;
       }
 
-      // ---- request cash-out ----
+      // ---- cash-out ----
       if (this.status === "cashoutActive") {
         this.status = "cashoutInactive";
         this.randomEnabled = false;
@@ -157,6 +168,9 @@ export const useMinesUI = defineStore("mines", {
     },
 
     startNewRound() {
+      // clear frozen multiplier
+      this.frozenNextMultiplier = null;
+
       this.status = "betActive";
       this.randomEnabled = false;
       this.randomTrigger = 0;
