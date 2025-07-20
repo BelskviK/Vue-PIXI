@@ -4,7 +4,7 @@
 - [ ✅ ] **BetInput / NumPad / ValuePicker:** pull their colours dynamically from config.
 - [ ✅ ] **ADDING component** label wich shows gained money.
 
-- [ ] **Auto Game:** honour all 3 stop conditions (X rounds, balance ≤ target, balance ≥ target).
+- [ ✅ ] **Auto Game:** honour all 3 stop conditions (X rounds, balance ≤ target, balance ≥ target).
 
 - [ ] **Header.vue:** highlight the active game in the switcher (change SVG fill for the selected game).
 - [ ] **Header.vue:** replace “How to Play” button with a shared modal system; modal content per game lives in `src/config/gameConfigs.ts`.

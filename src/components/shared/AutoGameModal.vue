@@ -1,5 +1,4 @@
 <template>
-  <!-- (template identical to your last copy — kept here in full) -->
   <div
     v-if="visible"
     class="fixed inset-0 z-50 flex items-center justify-center text-white"
@@ -61,7 +60,7 @@
           </div>
         </div>
 
-        <!-- Stop/Loss & Take/Profit rows (shown but still ignored) -->
+        <!-- Stop/Loss & Take/Profit rows -->
         <template v-for="row in rows" :key="row.key">
           <div
             class="flex items-center justify-between px-4 py-2.5 rounded bg-[#2a2b33]"
@@ -99,7 +98,7 @@
               </button>
               <input
                 type="number"
-                step="1.00"
+                step="1"
                 min="0"
                 class="w-[74px] text-center rounded bg-[#1a1b20] disabled:opacity-40 disabled:cursor-not-allowed"
                 v-model.number="row.model.value"
@@ -134,7 +133,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
-
 import type { ConditionType } from "@/config/gameConfigs";
 
 const props = defineProps<{
@@ -148,7 +146,6 @@ const emit = defineEmits<{
 
 const store = useMinesUI();
 
-/* ---------- visibility ---------- */
 const visible = computed({
   get: () => props.modelValue ?? true,
   set: (v: boolean) => emit("update:modelValue", v),
@@ -157,7 +154,6 @@ function close() {
   visible.value = false;
 }
 
-/* ---------- bind directly into store.auto ---------- */
 const rounds = computed<number>({
   get: () => store.auto.roundsPlanned,
   set: (v) => (store.auto.roundsPlanned = v),
@@ -175,7 +171,6 @@ const stopLoss = computed<number>({
   set: (v) => (store.auto.stopLoss = v),
 });
 
-/* take-profit */
 const withTakeProfit = computed({
   get: () => store.auto.takeProfit !== null,
   set: (v: boolean) => {
@@ -209,32 +204,26 @@ const rows: Row[] = [
   },
 ];
 
-/* ---------- spinner helpers ---------- */
 function increment(row: Row) {
-  /* … */
+  row.model.value++;
 }
 function decrement(row: Row) {
-  /* … */
+  row.model.value = Math.max(0, row.model.value - 1);
 }
 
-/* ---------- submit ---------- */
 function submit() {
   store.auto.process = true;
-  /* store the settings */
   store.setAutoConditions({
     rounds: rounds.value,
     stopLoss: store.auto.stopLoss,
     takeProfit: store.auto.takeProfit,
   });
-
-  /* immediately place the first bet so auto starts */
   if (store.status === "betActive") store.handleClick();
-
   emit("submit");
   close();
 }
 </script>
 
 <style scoped>
-/* Tailwind only */
+/* Tailwind-only */
 </style>
