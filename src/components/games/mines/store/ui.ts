@@ -1,8 +1,8 @@
 // src/components/games/mines/Store.ts
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/user";
-import { useMinesSettings } from "@/components/games/mines/settings";
-import { useMinesRound } from "@/components/games/mines/round";
+import { useMinesSettings } from "@/components/games/mines/store/settings";
+import { useMinesRound } from "@/components/games/mines/store/round";
 import { calcMultiplier } from "@/components/games/mines/math";
 
 export type ButtonStatus = "betActive" | "cashoutInactive" | "cashoutActive";
@@ -16,7 +16,7 @@ export interface AutoState {
   takeProfit: number | null;
 }
 
-export const useMinesStore = defineStore("mines", {
+export const useMinesUI = defineStore("mines", {
   /* ─────────────── STATE ─────────────── */
   state: () => ({
     status: "betActive" as ButtonStatus,

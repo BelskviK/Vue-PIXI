@@ -6,10 +6,10 @@
 import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { Application } from "pixi.js";
 import { Tile, TileType } from "./Tile";
-import { MinesEngine } from "@/components/games/mines/Engine";
-import { useMinesSettings } from "@/components/games/mines/settings";
-import { useMinesRound } from "@/components/games/mines/round";
-import { useMinesStore } from "@/components/games/mines/Store";
+import { MinesEngine } from "./Engine";
+import { useMinesSettings } from "@/components/games/mines/store/settings";
+import { useMinesRound } from "@/components/games/mines/store/round";
+import { useMinesUI } from "@/components/games/mines/store/ui";
 import { useUserStore } from "@/stores/user";
 import { calcMultiplier } from "@/components/games/mines/math";
 
@@ -39,7 +39,7 @@ const GAP = props.padding ?? 10;
 const preselected = new Set<number>();
 const settings = useMinesSettings();
 const round = useMinesRound();
-const ui = useMinesStore();
+const ui = useMinesUI();
 const preselectMode = computed(
   () => ui.auto.enabled && ui.status === "betActive"
 );

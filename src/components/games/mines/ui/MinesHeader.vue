@@ -85,15 +85,15 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
-import { useMinesSettings } from "@/components/games/mines/settings";
-import { useMinesRound } from "@/components/games/mines/round";
-import { useMinesStore } from "@/components/games/mines/Store";
+import { useMinesSettings } from "@/components/games/mines/store/settings";
+import { useMinesRound } from "@/components/games/mines/store/round";
+import { useMinesUI } from "@/components/games/mines/store/ui";
 import { calcMultiplier, TOTAL_TILES } from "@/components/games/mines/math";
 
 /* ─── stores ─────────────────────────────────────────────────── */
 const settings = useMinesSettings();
 const round = useMinesRound();
-const ui = useMinesStore();
+const ui = useMinesUI();
 
 /* ─── dropdown helpers ───────────────────────────────────────── */
 const locked = computed(() => ui.dropdownLocked);

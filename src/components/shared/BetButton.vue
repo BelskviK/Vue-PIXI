@@ -51,9 +51,9 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useMinesStore } from "@/components/games/mines/Store";
-import { useMinesSettings } from "@/components/games/mines/settings";
-import { useMinesRound } from "@/components/games/mines/round";
+import { useMinesUI } from "@/components/games/mines/store/ui";
+import { useMinesSettings } from "@/components/games/mines/store/settings";
+import { useMinesRound } from "@/components/games/mines/store/round";
 import { calcMultiplier } from "@/components/games/mines/math";
 import iconBet from "@/assets/icon-bet.svg";
 
@@ -61,7 +61,7 @@ const props = defineProps<{ status: string }>();
 const emit = defineEmits<{ (e: "bet"): void }>();
 
 /* stores */
-const ui = useMinesStore();
+const ui = useMinesUI();
 const settings = useMinesSettings();
 const round = useMinesRound();
 

@@ -7,7 +7,7 @@ import AutoGameModal from "@/components/shared/AutoGameModal.vue";
 /* ------- game stores -------- */
 import { useDiceStore } from "@/components/games/dice/Store";
 import { usePlinkoStore } from "@/components/games/plinko/Store";
-import { useMinesStore } from "@/components/games/mines/Store";
+import { useMinesUI } from "@/components/games/mines/store/ui";
 import { useGoalStore } from "@/components/games/goal/Store";
 import { useHiloStore } from "@/components/games/hilo/Store";
 import { useKenoStore } from "@/components/games/keno/Store";
@@ -33,7 +33,7 @@ const props = defineProps<{
 const gameStores: Record<string, any> = {
   dice: useDiceStore(),
   plinko: usePlinkoStore(),
-  mines: useMinesStore(),
+  mines: useMinesUI(),
   goal: useGoalStore(),
   hilo: useHiloStore(),
   keno: useKenoStore(),

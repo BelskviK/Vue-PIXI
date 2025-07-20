@@ -114,7 +114,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch, toRefs } from "vue";
-import { useMinesStore } from "@/components/games/mines/Store";
+import { useMinesUI } from "@/components/games/mines/store/ui";
 import iconBetVariant from "@/assets/icon-bet-variant.svg";
 import iconTick from "@/assets/icon-calculator-tick.svg";
 
@@ -126,7 +126,7 @@ const props = withDefaults(
 // keep reactivity on props
 const { classes, disabled } = toRefs(props);
 
-const store = useMinesStore();
+const store = useMinesUI();
 
 const isOpen = ref(false);
 const numPadOpen = ref(false);

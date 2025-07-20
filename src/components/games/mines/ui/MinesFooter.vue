@@ -64,9 +64,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import iconAuto from "@/assets/icon-auto.svg";
-import { useMinesStore } from "@/components/games/mines/Store";
+import { useMinesUI } from "@/components/games/mines/store/ui";
 
-const store = useMinesStore();
+const store = useMinesUI();
 
 /* UI helpers */
 const randomClickable = computed(() => store.randomButtonEnabled);

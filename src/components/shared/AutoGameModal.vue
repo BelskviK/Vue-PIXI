@@ -142,7 +142,7 @@
 
 <script setup lang="ts">
 import { computed, defineProps, defineEmits, ref } from "vue";
-import { useMinesStore } from "@/components/games/mines/Store";
+import { useMinesUI } from "@/components/games/mines/store/ui";
 import type { ConditionType } from "@/config/gameConfigs";
 
 const props = defineProps({
@@ -154,7 +154,7 @@ const emit = defineEmits<{
   (e: "submit"): void;
 }>();
 
-const store = useMinesStore();
+const store = useMinesUI();
 
 /* visibility */
 const visible = computed({
