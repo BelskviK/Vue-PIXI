@@ -102,7 +102,11 @@ export const useMinesUI = defineStore("mines", {
           this.randomEnabled = true;
         }
         this.lastWin = 0;
-        if (this.auto.enabled) this.auto.running = true;
+        if (this.auto.enabled) {
+          // starting the first auto round
+          this.auto.running = true;
+          this.auto.process = true; // <<< begin auto‐session
+        }
         return;
       }
 
@@ -154,6 +158,7 @@ export const useMinesUI = defineStore("mines", {
         if (this.auto.currentRound >= this.auto.roundsPlanned) {
           /* finished – turn Auto OFF */
           this.auto.enabled = false;
+          this.auto.process = false; // <<< end auto‐session
         }
       }
     },
