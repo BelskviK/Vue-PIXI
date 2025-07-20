@@ -1,4 +1,3 @@
-// src/components/shared/BetInput.vue
 <template>
   <!-- wrapper fades when locked -->
   <div :class="['relative', disabled ? 'opacity-50' : '']">
@@ -70,7 +69,7 @@
             @click.stop="toggleDropdown"
             class="flex items-center justify-center mx-2 text-white font-medium border border-black rounded-full w-[38px] h-[36px] active:translate-y-[2px] cursor-pointer shadow-[1px_1px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.2)]"
           >
-            <img :src="iconBetVariant" alt="" class="w-5 h-5" />
+            <img :src="iconBetVariant" alt="" class="w-4 h-4" />
           </span>
 
           <button
@@ -109,7 +108,6 @@
               : 'bg-[#094164] hover:bg-[#0b5679]',
           ]"
           :style="{
-            /* top layer = black@40%, bottom layer = your theme.color */
             background: `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), ${theme.btn}`,
           }"
         >
@@ -127,17 +125,16 @@ import iconBetVariant from "@/assets/icon-bet-variant.svg";
 import iconTick from "@/assets/icon-calculator-tick.svg";
 
 // accept only theme.btn and disabled
-const props = defineProps<{
-  theme: { btn: string };
-  disabled?: boolean;
-}>();
+const props = defineProps<{ theme: { btn: string }; disabled?: boolean }>();
 const { theme, disabled } = toRefs(props);
 
 const store = useMinesUI();
 const isOpen = ref(false);
 const numPadOpen = ref(false);
-const inputValue = ref(store.betValue.toFixed(2));
-const selectedAmount = ref(store.betValue.toFixed(2));
+
+// start at store.betValue if >0, otherwise default "0.10"
+const inputValue = ref(store.betValue > 0 ? store.betValue.toFixed(2) : "0.10");
+const selectedAmount = ref(inputValue.value);
 
 const amounts = [
   "0.10",
@@ -167,13 +164,26 @@ function toggleDropdown() {
   isOpen.value = !isOpen.value;
   if (isOpen.value) numPadOpen.value = false;
 }
+
 function openNumPad() {
   if (disabled?.value) return;
   numPadOpen.value = true;
-  inputValue.value = "";
+  inputValue.value = ""; // clear for fresh entry
   isOpen.value = false;
 }
+
 function closeAll() {
+  // when numPad is open and closing, apply dialed input or default
+  if (numPadOpen.value) {
+    let v: number;
+    if (inputValue.value) {
+      v = parseFloat(inputValue.value);
+      if (isNaN(v) || v === 0) v = 0.1;
+    } else {
+      v = 0.1;
+    }
+    setBet(v.toFixed(2));
+  }
   isOpen.value = false;
   numPadOpen.value = false;
 }
@@ -198,6 +208,7 @@ function pressKey(k: string) {
   else if (k === "." && inputValue.value.includes(".")) return;
   else inputValue.value += k;
 }
+
 function confirmInput() {
   if (disabled?.value) return;
   let v = parseFloat(inputValue.value);
