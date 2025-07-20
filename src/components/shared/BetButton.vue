@@ -51,10 +51,10 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useMinesUI } from "@/components/games/mines/store/ui";
-import { useMinesSettings } from "@/components/games/mines/store/settings";
-import { useMinesRound } from "@/components/games/mines/store/round";
-import { calcMultiplier } from "@/components/games/mines/math";
+import { useMinesUI } from "@/modules/games/mines/store/ui";
+import { useMinesSettings } from "@/modules/games/mines/store/settings";
+import { useMinesRound } from "@/modules/games/mines/store/round";
+import { calcMultiplier } from "@/modules/games/mines/math";
 import iconBet from "@/assets/icon-bet.svg";
 
 const props = defineProps<{ status: string }>();

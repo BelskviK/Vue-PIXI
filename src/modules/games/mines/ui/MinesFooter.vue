@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import iconAuto from "@/assets/icon-auto.svg";
-import { useMinesUI } from "@/components/games/mines/store/ui";
+import { useMinesUI } from "@/modules/games/mines/store/ui";
 
 const store = useMinesUI();
 

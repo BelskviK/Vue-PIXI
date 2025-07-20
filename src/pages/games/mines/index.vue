@@ -27,5 +27,5 @@
 <script setup lang="ts">
 import minesStar from "@/assets/mines-star.svg";
 import minesBomb from "@/assets/mines-bomb.svg";
-import MinesGame from "@/components/games/mines/MinesGame.vue";
+import MinesGame from "@/modules/games/mines/MinesGame.vue";
 </script>

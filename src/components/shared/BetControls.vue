@@ -5,15 +5,15 @@ import { gameConfigs } from "@/config/gameConfigs";
 import AutoGameModal from "@/components/shared/AutoGameModal.vue";
 
 /* ------- game stores -------- */
-import { useDiceStore } from "@/components/games/dice/Store";
-import { usePlinkoStore } from "@/components/games/plinko/Store";
-import { useMinesUI } from "@/components/games/mines/store/ui";
-import { useGoalStore } from "@/components/games/goal/Store";
-import { useHiloStore } from "@/components/games/hilo/Store";
-import { useKenoStore } from "@/components/games/keno/Store";
-import { useMiniRouletteStore } from "@/components/games/mini-roulette/Store";
-import { useHotlineStore } from "@/components/games/hotline/Store";
-import { useBalloonStore } from "@/components/games/balloon/Store";
+import { useDiceStore } from "@/modules/games/dice/Store";
+import { usePlinkoStore } from "@/modules/games/plinko/Store";
+import { useMinesUI } from "@/modules/games/mines/store/ui";
+import { useGoalStore } from "@/modules/games/goal/Store";
+import { useHiloStore } from "@/modules/games/hilo/Store";
+import { useKenoStore } from "@/modules/games/keno/Store";
+import { useMiniRouletteStore } from "@/modules/games/mini-roulette/Store";
+import { useHotlineStore } from "@/modules/games/hotline/Store";
+import { useBalloonStore } from "@/modules/games/balloon/Store";
 
 /* ------- ui pieces ---------- */
 import BetAuto from "@/components/shared/BetAuto.vue";

@@ -7,11 +7,11 @@ import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { Application } from "pixi.js";
 import { Tile, TileType } from "./Tile";
 import { MinesEngine } from "./Engine";
-import { useMinesSettings } from "@/components/games/mines/store/settings";
-import { useMinesRound } from "@/components/games/mines/store/round";
-import { useMinesUI } from "@/components/games/mines/store/ui";
+import { useMinesSettings } from "@/modules/games/mines/store/settings";
+import { useMinesRound } from "@/modules/games/mines/store/round";
+import { useMinesUI } from "@/modules/games/mines/store/ui";
 import { useUserStore } from "@/stores/user";
-import { calcMultiplier } from "@/components/games/mines/math";
+import { calcMultiplier } from "@/modules/games/mines/math";
 
 /* ---------- props ---------- */
 interface Props {

@@ -142,7 +142,7 @@
 
 <script setup lang="ts">
 import { computed, defineProps, defineEmits, ref } from "vue";
-import { useMinesUI } from "@/components/games/mines/store/ui";
+import { useMinesUI } from "@/modules/games/mines/store/ui";
 import type { ConditionType } from "@/config/gameConfigs";
 
 const props = defineProps({

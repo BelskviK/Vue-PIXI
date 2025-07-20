@@ -114,7 +114,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch, toRefs } from "vue";
-import { useMinesUI } from "@/components/games/mines/store/ui";
+import { useMinesUI } from "@/modules/games/mines/store/ui";
 import iconBetVariant from "@/assets/icon-bet-variant.svg";
 import iconTick from "@/assets/icon-calculator-tick.svg";
 
