@@ -11,7 +11,11 @@ import { useMinesSettings } from "@/modules/games/mines/store/settings";
 import { useMinesRound } from "@/modules/games/mines/store/round";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
 import { useUserStore } from "@/stores/user";
-import { calcMultiplier } from "@/modules/games/mines/math";
+import {
+  calcMultiplier,
+  TOTAL_TILES,
+  roundUp500,
+} from "@/modules/games/mines/math";
 
 /* ---------- props ---------- */
 interface Props {
@@ -25,10 +29,10 @@ const props = defineProps<Props>();
 
 /* ---------- PIXI ---------- */
 const container = ref<HTMLDivElement | null>(null);
-let app: Application;
+let app: Application | null = null;
 let resizeObserver: ResizeObserver;
 
-/* ---------- state & helpers ---------- */
+/* ---------- game state ---------- */
 let engine: MinesEngine;
 const tiles = new Map<number, Tile>();
 const BASE_W = props.tileWidth ?? 64;
@@ -71,19 +75,17 @@ let explodeTimer: ReturnType<typeof setTimeout> | null = null;
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
 let settleTimer: ReturnType<typeof setTimeout> | null = null;
 
-/* other flags */
+/* misc */
 const wallet = useUserStore();
 const boardActive = computed(() => ui.boardActive);
 let firstSafe = false;
 
-/* ---------- generic helpers ---------- */
+/* ---------- helper fns ---------- */
 function clear(t: ReturnType<typeof setTimeout> | null) {
   if (t) clearTimeout(t);
 }
 function clearAllTimers() {
-  clear(explodeTimer);
-  clear(idleTimer);
-  clear(settleTimer);
+  [explodeTimer, idleTimer, settleTimer].forEach(clear);
   explodeTimer = idleTimer = settleTimer = null;
 }
 function scheduleIdleRestart() {
@@ -91,7 +93,7 @@ function scheduleIdleRestart() {
   idleTimer = setTimeout(makeNewGame, 30_000);
 }
 
-/* ---------- board (re)construction ---------- */
+/* ---------- new round ---------- */
 function makeNewGame() {
   clearAllTimers();
   if (!ui.auto.enabled) clearPreselection();
@@ -107,7 +109,8 @@ function makeNewGame() {
 
 /* ---------- drawing ---------- */
 function drawBoard() {
-  if (!container.value) return;
+  if (!container.value || !app) return;
+
   app.stage.removeChildren();
   tiles.clear();
 
@@ -134,7 +137,6 @@ function drawBoard() {
       tiles.set(idx, t);
       app.stage.addChild(t);
 
-      /* keep green tiles visible between rounds */
       if (preselected.has(idx)) t.setKind(TileType.Preselect);
     }
 
@@ -148,7 +150,7 @@ function applyDim() {
 
 /* ---------- gameplay ---------- */
 function handleTileClick(idx: number) {
-  /* Auto-mode green-tile selection */
+  /* selection phase */
   if (preselectMode.value) {
     if (preselected.has(idx)) {
       preselected.delete(idx);
@@ -161,7 +163,7 @@ function handleTileClick(idx: number) {
     return;
   }
 
-  /* Manual / auto reveal */
+  /* reveal phase */
   if (!boardActive.value) return;
   if (engine.exploded || engine.isRevealed(idx)) return;
 
@@ -183,51 +185,60 @@ function handleTileClick(idx: number) {
   }
 }
 
-/* ---------- auto-round helper ---------- */
+/* ---------- auto helper ---------- */
 function runAutoRound() {
   if (!ui.auto.running) return;
 
-  /* 1) reveal every pre-selected tile immediately */
+  /* reveal every green tile */
   for (const idx of preselected) {
     if (!engine.isRevealed(idx)) handleTileClick(idx);
     if (engine.exploded) break;
   }
 
-  /* 2) show whole board so the player sees bombs/stars */
+  /* show full board */
   revealAllTiles();
 
-  /* 3) settle the outcome after a short pause */
+  /* settle */
   clear(settleTimer);
   settleTimer = setTimeout(() => {
-    if (engine.exploded) finishByExplosion();
-    else finishByCashout();
-  }, 250); // just enough for flip animation
+    engine.exploded ? finishByExplosion() : finishByCashout();
+  }, 250);
 }
 
-/* ---------- finishing helpers ---------- */
+/* ---------- finish helpers ---------- */
 function revealAllTiles() {
   engine.revealAll().forEach((st, idx) => {
     const t = tiles.get(idx)!;
-    if (
-      st === "bomb" &&
-      (t.kind === TileType.Hidden || t.kind === TileType.Preselect)
-    )
-      t.revealFinal(TileType.Bomb);
-    else if (st === "hidden") t.revealFinal(TileType.StarBlue);
+    const pre = preselected.has(idx);
+
+    if (st === "bomb") t.revealFinal(pre ? TileType.Explosion : TileType.Bomb);
+    else if (st === "hidden")
+      t.revealFinal(pre ? TileType.StarGold : TileType.StarBlue);
   });
 }
+
 function finishByExplosion() {
+  /* classic & auto both flip the rest */
+  revealAllTiles();
+
   round.revealAll();
   ui.forceCashoutInactive();
   clear(idleTimer);
-
-  /* 🚀 give the board 2 s so all tiles finish flipping */
-  explodeTimer = setTimeout(makeNewGame, 2_000);
+  explodeTimer = setTimeout(makeNewGame, 4_000);
 }
+
 function finishByCashout() {
-  /* multiplier uses how many SAFE picks the player made */
-  const win =
-    ui.betValue * calcMultiplier(settings.minesCount, round.revealedTiles);
+  const bombs = settings.minesCount;
+  const kSafe = round.revealedTiles;
+  const maxSafe = TOTAL_TILES - bombs;
+  const kNext = kSafe + 1;
+
+  const nextMult =
+    kNext <= maxSafe
+      ? calcMultiplier(bombs, kNext)
+      : roundUp500(calcMultiplier(bombs, kSafe));
+
+  const win = parseFloat((ui.betValue * nextMult).toFixed(2));
 
   ui.forceCashoutInactive();
   round.revealAll();
@@ -254,7 +265,7 @@ onMounted(async () => {
 });
 onUnmounted(() => {
   resizeObserver?.disconnect();
-  app.destroy({ removeView: true }, { children: true, texture: true });
+  app?.destroy({ removeView: true }, { children: true, texture: true });
   clearAllTimers();
 });
 
@@ -274,7 +285,9 @@ watch(preselectMode, (v) => {
 watch(
   () => ui.status,
   (s) => {
-    if (s !== "betActive") clearPreselection();
+    /* 🔑 keep greens after first bet in AUTO */
+    if (s !== "betActive" && !ui.auto.enabled) clearPreselection();
+
     if (s === "cashoutInactive" && !firstSafe) scheduleIdleRestart();
     else clear(idleTimer);
   }
@@ -282,10 +295,7 @@ watch(
 watch(
   () => ui.randomTrigger,
   (n, o) => {
-    if (n > o) {
-      if (preselectMode.value) randomPreselect();
-      else revealRandomTile();
-    }
+    if (n > o) (preselectMode.value ? randomPreselect : revealRandomTile)();
   }
 );
 watch(
@@ -294,34 +304,31 @@ watch(
     if (n > o) deselectOnePreselection();
   }
 );
-/* === when a new bet is placed in auto mode === */
 watch(
   () => ui.auto.running,
-  (run) => {
-    if (run) runAutoRound();
-  }
+  (run) => run && runAutoRound()
 );
 
-/* fallback helpers for Random button */
+/* ---------- Random helpers ---------- */
 function randomPreselect() {
   if (preselected.size >= maxSelectable()) return;
-  const options: number[] = [];
-  for (let i = 0; i < props.rows * props.cols; i++)
-    if (!preselected.has(i)) options.push(i);
-  if (options.length === 0) return;
-  const idx = options[Math.floor(Math.random() * options.length)];
+  const pool = Array.from(
+    { length: props.rows * props.cols },
+    (_, i) => i
+  ).filter((i) => !preselected.has(i));
+  if (pool.length === 0) return;
+  const idx = pool[Math.floor(Math.random() * pool.length)];
   preselected.add(idx);
   tiles.get(idx)!.setKind(TileType.Preselect);
   syncPreselected();
 }
 function revealRandomTile() {
-  if (!boardActive.value) return;
-  const options: number[] = [];
-  for (let i = 0; i < props.rows * props.cols; i++)
-    if (!engine.isRevealed(i)) options.push(i);
-  if (options.length === 0) return;
-  const idx = options[Math.floor(Math.random() * options.length)];
-  handleTileClick(idx);
+  const pool = Array.from(
+    { length: props.rows * props.cols },
+    (_, i) => i
+  ).filter((i) => !engine.isRevealed(i));
+  if (pool.length === 0) return;
+  handleTileClick(pool[Math.floor(Math.random() * pool.length)]);
 }
 </script>
 
