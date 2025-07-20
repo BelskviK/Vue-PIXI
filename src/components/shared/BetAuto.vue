@@ -1,13 +1,13 @@
-<!-- src/components/shared/BetAuto.vue -->
 <template>
   <button
     @click="handleClick"
     class="w-full max-w-[50px] h-[50px] mr-3 rounded-full"
-    :disabled="disabled || store.autoGameInProgress"
+    :disabled="props.disabled && !store.auto.process"
     :class="buttonClasses"
+    :style="processStyle"
   >
-    <!-- countdown while running -->
-    <span v-if="running" class="text-white font-semibold text-lg">
+    <!-- countdown while auto process is active -->
+    <span v-if="store.auto.process" class="text-white font-semibold text-lg">
       {{ countdown }}
     </span>
 
@@ -22,50 +22,66 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { computed } from "vue";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
-
 import iconAutoPlay from "@/assets/icon-auto-play.svg";
+
 const store = useMinesUI();
 
 const props = withDefaults(
   defineProps<{
-    running: boolean; // red / countdown mode
-    ready: boolean; // checkbox ticked
-    disabled: boolean; // round locked OR not-ready
+    ready: boolean; // checkbox state when idle
+    disabled: boolean; // disabled when round locked or not ready
   }>(),
-  { running: false, ready: false, disabled: false }
+  { ready: false, disabled: false }
 );
 
 const emit = defineEmits<{ (e: "toggle"): void }>();
 
-/* ---------------- countdown while running --------------------------- */
-const countdown = ref(0);
-watch(
-  () => props.running,
-  (run) => {
-    countdown.value = run ? 5 : 0;
-  }
+// remaining auto rounds countdown
+const countdown = computed(() =>
+  store.auto.process ? store.auto.roundsPlanned - store.auto.currentRound : 0
 );
 
-/* ---------------- click logic --------------------------------------- */
 function handleClick() {
-  if (props.disabled) return; // guard: inactive
-  if (!props.running) emit("toggle"); // open modal when idle
+  // guard click when disabled and not in process
+  if (props.disabled && !store.auto.process) return;
+
+  if (store.auto.process) {
+    // request to stop auto-game after current round finishes
+    store.requestStopAutoGame();
+    return;
+  }
+
+  // open modal when idle
+  if (!store.auto.running) emit("toggle");
 }
 
-/* ---------------- styling ------------------------------------------- */
 const buttonClasses = computed(() => {
   const base =
     "w-16 h-16 flex items-center justify-center rounded-full border-2 " +
     "shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]";
 
-  if (props.disabled) return [base, "opacity-40 cursor-not-allowed"];
+  // during auto process: gradient via style, clickable, opacity reflects stopRequested
+  if (store.auto.process) {
+    const op = store.auto.stopRequested ? "opacity-50" : "opacity-100";
+    return [base, `${op} cursor-pointer`, "border-gray-400"];
+  }
 
-  if (props.running) return [base, "bg-[#cc000e] border-gray-400"]; // red
+  // disabled state
+  if (props.disabled) {
+    return [base, "opacity-40 cursor-not-allowed"];
+  }
 
-  /* idle */
+  // idle state: green background
   const dim = props.ready ? "opacity-100" : "opacity-40";
   return [base, dim, "bg-green-500 border-green-400 hover:brightness-110"];
 });
+
+// radial gradient applied during countdown
+const processStyle = computed(() =>
+  store.auto.process
+    ? { background: "radial-gradient(circle at 50% 50%,#ee0011,#b3000c 94%)" }
+    : {}
+);
 </script>

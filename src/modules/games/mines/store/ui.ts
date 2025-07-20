@@ -19,6 +19,7 @@ export interface AutoState {
   currentRound: number;
   stopLoss: number | null;
   takeProfit: number | null;
+  stopRequested: boolean;
 }
 
 export const useMinesUI = defineStore("mines", {
@@ -46,6 +47,7 @@ export const useMinesUI = defineStore("mines", {
       currentRound: 0,
       stopLoss: null,
       takeProfit: null,
+      stopRequested: false,
     },
 
     /** frozen next-multiplier at Auto start */
@@ -101,6 +103,13 @@ export const useMinesUI = defineStore("mines", {
         return roundUp500(current);
       }
     },
+
+    /**
+     * Bet button opacity: 1 when auto running or manual, 0.5 when auto recently stopped
+     */
+    betButtonOpacity(): number {
+      return this.auto.process || this.auto.enabled ? 1 : 0.5;
+    },
   },
 
   actions: {
@@ -115,6 +124,26 @@ export const useMinesUI = defineStore("mines", {
       this.auto.roundsPlanned = cfg.rounds;
       this.auto.stopLoss = cfg.stopLoss ?? null;
       this.auto.takeProfit = cfg.takeProfit ?? null;
+      this.auto.stopRequested = false;
+    },
+
+    /**
+     * Called by BetAuto button click: defer stopping until end of round
+     */
+    requestStopAutoGame() {
+      if (this.auto.process) {
+        this.auto.stopRequested = true;
+      }
+    },
+
+    /**
+     * Internal: immediately halt auto-play
+     */
+    stopAutoGame() {
+      this.auto.process = false;
+      this.auto.running = false;
+      this.auto.enabled = false;
+      this.auto.stopRequested = false;
     },
 
     handleClick() {
@@ -178,13 +207,18 @@ export const useMinesUI = defineStore("mines", {
       this.undoPreselectTrigger = 0;
       this.lastWin = 0;
 
+      // advance rounds if auto
       if (this.auto.enabled) {
         this.auto.currentRound++;
         this.auto.running = false;
-        if (this.auto.currentRound >= this.auto.roundsPlanned) {
-          this.auto.enabled = false;
-          this.auto.process = false;
-        }
+      }
+
+      // after board reset, handle stop request or completion
+      if (
+        this.auto.stopRequested ||
+        this.auto.currentRound >= this.auto.roundsPlanned
+      ) {
+        this.stopAutoGame();
       }
     },
 
