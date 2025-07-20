@@ -13,7 +13,7 @@
     >
       <!-- HEADER -->
       <header
-        class="flex items-center justify-between px-5 py-4 bg-[#14151a] border-b border-[#3f3f3f]"
+        class="flex items-center justify-between px-5 py-4 bg-[#14151a] border-b border-[#3f3f3f] rounded-t-2xl"
       >
         <h5 class="font-semibold tracking-wide">AUTO PLAY</h5>
         <button
@@ -125,13 +125,6 @@
           @click="submit"
         >
           START AUTO
-        </button>
-        <button
-          type="button"
-          class="w-full mt-2 text-center text-xs text-gray-400 hover:text-gray-200"
-          @click="close"
-        >
-          Cancel
         </button>
       </footer>
     </div>
