@@ -14,6 +14,7 @@
 - [ ] **Global:** remove any lingering `defineProps` warnings.
 - [ ] when selected mines = 1 multiplier rounds 24 to 500
 - [ ] betinput null
+- [ ] animation when reveal, unimate click before rvealing
 
       adjustments:
 

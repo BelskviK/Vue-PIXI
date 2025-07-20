@@ -3,7 +3,7 @@ import { Container, Graphics, FillGradient, Ticker } from "pixi.js";
 /* ───────────── Public API ───────────── */
 export enum TileType {
   Hidden = "hidden",
-  Preselect = "preselect", // ⬅️ NEW – green pre-selected tile
+  Preselect = "preselect",
   Bomb = "bomb",
   StarBlue = "starBlue",
   StarGold = "starGold",
@@ -12,7 +12,7 @@ export enum TileType {
 
 export const TILE_CYCLE: TileType[] = [
   TileType.Hidden,
-  TileType.Preselect, // ⬅️ include in cycle so setKind works
+  TileType.Preselect,
   TileType.Bomb,
   TileType.StarBlue,
   TileType.StarGold,
@@ -26,11 +26,11 @@ export interface TileOptions {
   borderWidth?: number;
 }
 
-/* ───────────── Styling ───────────── */
+/* ───────────── Styling & timing ───────────── */
 const BORDER_COLOR = 0x2a4b8c;
 const BORDER_ALPHA = 0.8;
 const DEFAULT_BORDER = 2;
-const FLIP_HALF_DURATION = 0.18;
+export const FLIP_HALF_DURATION = 0.18; // <— shared
 
 /* ───────────── Implementation ───────────── */
 export class Tile extends Container {
@@ -69,18 +69,17 @@ export class Tile extends Container {
   }
 
   /* ───── Public helpers ───── */
-  next(): void {
-    if (this.busy) return;
-    this.cycleIndex = (this.cycleIndex + 1) % TILE_CYCLE.length;
-    this.redraw();
-  }
-
   revealFinal(kind: TileType, animate = true): void {
     if (animate) this.playHorizontalFlip(TILE_CYCLE.indexOf(kind));
     else {
       this.cycleIndex = TILE_CYCLE.indexOf(kind);
       this.redraw();
     }
+  }
+
+  /** NEW – vertical flip used for board reset */
+  resetTo(kind: TileType): void {
+    this.playVerticalFlip(TILE_CYCLE.indexOf(kind));
   }
 
   setKind(kind: TileType): void {
@@ -91,7 +90,6 @@ export class Tile extends Container {
     }
   }
 
-  /** Dim/undim for board-state indication. */
   setDimmed(on: boolean) {
     this.alpha = on ? 0.6 : 1.0;
   }
@@ -135,8 +133,15 @@ export class Tile extends Container {
     this.icon.position.set(this.w / 2, this.h / 2);
   }
 
-  /* ───── Flip animation for reveal-all ───── */
+  /* ───── Flip animations ───── */
   private playHorizontalFlip(targetIdx: number): void {
+    this.playFlip(targetIdx, "x");
+  }
+  private playVerticalFlip(targetIdx: number): void {
+    this.playFlip(targetIdx, "y");
+  }
+
+  private playFlip(targetIdx: number, axis: "x" | "y"): void {
     this.busy = true;
     const ticker = Ticker.shared;
     let phase: 0 | 1 = 0;
@@ -145,7 +150,7 @@ export class Tile extends Container {
       t += tk.deltaMS / 1000;
       const p = Math.min(1, t / FLIP_HALF_DURATION);
       const eased = phase === 0 ? 1 - (1 - p) ** 2 : p ** 2;
-      this.body.scale.x = phase === 0 ? 1 - eased : eased;
+      this.body.scale[axis] = phase === 0 ? 1 - eased : eased;
 
       if (p >= 1) {
         if (phase === 0) {
@@ -155,7 +160,7 @@ export class Tile extends Container {
           t = 0;
           return;
         }
-        this.body.scale.x = 1;
+        this.body.scale[axis] = 1;
         ticker.remove(step);
         this.busy = false;
       }
@@ -168,13 +173,13 @@ export class Tile extends Container {
 function faceColors(kind: TileType): [number, number] {
   switch (kind) {
     case TileType.Preselect:
-      return [0x2ecc71, 0x27ae60]; // green gradient
+      return [0x2ecc71, 0x27ae60];
     case TileType.StarGold:
       return [0xffc63c, 0xe88900];
     case TileType.Explosion:
       return [0xff8a97, 0xdd4c66];
     default:
-      return [0x0b5aa4, 0x064186]; // default blue
+      return [0x0b5aa4, 0x064186];
   }
 }
 
