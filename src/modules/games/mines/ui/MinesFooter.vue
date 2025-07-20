@@ -1,3 +1,4 @@
+<!-- src/modules/games/mines/ui/MinesFooter.vue -->
 <template>
   <div
     :class="[
@@ -36,23 +37,30 @@
 
     <!-- AUTO toggle --------------------------------------------------- -->
     <label
-      class="inline-flex items-center cursor-pointer space-x-2 truncate bg-black/30 rounded-3xl w-full h-[26px] p-1"
-      :class="
-        store.status === 'betActive'
-          ? 'opacity-100'
-          : 'opacity-40 cursor-not-allowed'
-      "
+      class="inline-flex items-center space-x-2 truncate bg-black/30 rounded-3xl w-full h-[26px] p-1 transition duration-200"
+      :class="[
+        // normal enable vs disabled by status
+        store.status === 'betActive' && !store.auto.process
+          ? 'opacity-100 cursor-pointer'
+          : 'opacity-40 cursor-not-allowed',
+        // blur & fully disable when auto process running
+        store.auto.process ? 'pointer-events-none ' : '',
+      ]"
     >
       <!-- icon -->
       <img
         :src="iconAuto"
         alt="Auto"
         class="w-[18px] h-[20px]"
-        :class="
-          preselectMode
+        :class="[
+          // always forced to 60% opacity when auto.process is true
+          store.auto.process
+            ? 'opacity-60'
+            : // otherwise fall back to your existing logic
+            preselectMode
             ? 'hover:opacity-80 active:translate-y-[1px]'
-            : 'opacity-60 cursor-not-allowed'
-        "
+            : 'opacity-60',
+        ]"
         @click.stop.prevent="handleUndoPreselect"
       />
 
@@ -93,11 +101,9 @@ const preselectMode = computed(
 
 /* combined Random behavior */
 function onRandomClick() {
-  // manual mode: place a bet first if not auto
   if (!store.auto.enabled && store.status === "betActive") {
     store.handleClick();
   }
-  // always trigger random pick/preselect
   store.pickRandomTile();
 }
 

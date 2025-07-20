@@ -59,8 +59,10 @@ const betValue = ref(props.maxBet ?? 0);
 /* reactive flags ------------------------------------------------------ */
 const status = computed(() => store.betButtonStatus as string);
 const autoEnabled = computed(() => store.auto?.enabled ?? false);
+// only disable when auto.process is true
+const autoProcess = computed(() => store.auto?.process ?? false);
 const autoRunning = computed(() => store.auto?.running ?? false);
-const roundLocked = computed(() => store.status !== "betActive"); // 🔒
+const roundLocked = computed(() => store.status !== "betActive");
 
 /* --- NEW: lock BetAuto until at least one tile is pre-selected ----- */
 const betAutoDisabled = computed(
@@ -91,9 +93,9 @@ function onBetClick() {
 const modalOpen = ref(false);
 
 function toggleAuto() {
-  if (betAutoDisabled.value) return; // guard
+  if (betAutoDisabled.value) return;
   if (!autoRunning.value && autoCfg.value) {
-    modalOpen.value = true; // open settings modal
+    modalOpen.value = true;
   }
 }
 
@@ -118,7 +120,7 @@ function handleAutoSubmit(payload?: any) {
       <!-- stake -->
       <BetInput
         :value="betValue"
-        :disabled="roundLocked || !autoEnabled.value"
+        :disabled="roundLocked || autoProcess"
         @increase="inc"
         @decrease="dec"
         :classes="theme.btn"
@@ -148,5 +150,5 @@ function handleAutoSubmit(payload?: any) {
 </template>
 
 <style scoped>
-/* Tailwind only */
+/* Tailwind-only */
 </style>
