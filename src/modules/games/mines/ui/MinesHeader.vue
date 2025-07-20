@@ -1,9 +1,9 @@
-<!-- src/components/games/mines/MinesHeader.vue -->
+<!-- src/modules/games/mines/ui/MinesHeader.vue -->
 <template>
   <div class="w-full">
     <!-- selector + multiplier row -->
     <div class="flex w-full h-[22px] rounded-[12px] bg-[#15171969]">
-      <!-- mines dropdown --------------------------------------------------- -->
+      <!-- mines dropdown -->
       <div class="relative flex-1" ref="wrapper">
         <button
           @click="toggleDropdown"
@@ -57,7 +57,7 @@
         </div>
       </div>
 
-      <!-- multiplier pill -------------------------------------------------- -->
+      <!-- multiplier pill -->
       <div class="flex flex-1 justify-end">
         <div
           class="flex items-center justify-center w-[100px] h-[20px] rounded-3xl border border-black shadow-[1px_1px_0_rgba(0,0,0,0.3),inset_1px_1px_0_rgba(255,255,255,0.2)]"
@@ -84,11 +84,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useMinesSettings } from "@/modules/games/mines/store/settings";
 import { useMinesRound } from "@/modules/games/mines/store/round";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
-import { calcMultiplier, TOTAL_TILES } from "@/modules/games/mines/math";
 
 /* ─── stores ─────────────────────────────────────────────────── */
 const settings = useMinesSettings();
@@ -108,9 +107,7 @@ function selectMines(n: number) {
   settings.setMinesCount(n);
   isOpen.value = false;
 }
-watch(locked, (v) => v && (isOpen.value = false));
 
-/* outside-click close */
 const wrapper = ref<HTMLElement | null>(null);
 function onClickOutside(e: MouseEvent) {
   if (wrapper.value && !wrapper.value.contains(e.target as Node)) {
@@ -120,55 +117,13 @@ function onClickOutside(e: MouseEvent) {
 onMounted(() => document.addEventListener("click", onClickOutside));
 onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
-/* ─── helper: round up to next 500 ---------------------------------- */
-function roundUp500(n: number): number {
-  return Math.ceil(n / 500) * 500;
-}
-
 /* ─── reactive UI --------------------------------------------------- */
 const progress = computed(() => round.progressPercent);
-const shownMultiplier = ref("—");
-
-function refreshMultiplier() {
-  if (round.finished || round.totalTiles === 0) return;
-
-  const bombs = settings.minesCount;
-  const safeRevealed =
-    ui.auto.enabled && ui.status === "betActive"
-      ? round.preselectedTiles
-      : round.revealedTiles;
-
-  const maxSafe = TOTAL_TILES - bombs;
-
-  let kNext = safeRevealed + 1;
-
-  let m: number;
-
-  if (kNext <= maxSafe) {
-    /* normal preview of next safe tile */
-    m = calcMultiplier(bombs, kNext);
-  } else {
-    /* no next tile – round current multiplier up to next multiple of 500 */
-    const current = calcMultiplier(bombs, safeRevealed);
-    m = roundUp500(current);
-  }
-
-  shownMultiplier.value = m.toFixed(2) + "x";
-}
-watch(
-  () => [
-    settings.minesCount,
-    round.revealedTiles,
-    round.preselectedTiles,
-    round.finished,
-    ui.auto.enabled,
-    ui.status,
-  ],
-  refreshMultiplier,
-  { immediate: true }
+const shownMultiplier = computed(() =>
+  ui.nextMultiplier ? `${ui.nextMultiplier.toFixed(2)}x` : "0.00x"
 );
 
-/* pill colour – green when Auto armed */
+/* pill colour – green when Auto is armed */
 const multiplierColor = computed(() =>
   ui.auto.enabled ? "#28a745" : "#ffc107"
 );

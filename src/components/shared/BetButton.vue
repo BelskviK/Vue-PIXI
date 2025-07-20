@@ -53,19 +53,11 @@
 import { computed, PropType } from "vue";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
 import { useMinesSettings } from "@/modules/games/mines/store/settings";
-import { useMinesRound } from "@/modules/games/mines/store/round";
-import { calcMultiplier } from "@/modules/games/mines/math";
 import iconBet from "@/assets/icon-bet.svg";
 
-// define status with a safe default
 const props = defineProps({
-  status: {
-    type: String as PropType<string>,
-    required: false,
-    default: "",
-  },
+  status: { type: String as PropType<string>, default: "" },
 });
-
 const emit = defineEmits<{
   (e: "bet"): void;
 }>();
@@ -73,7 +65,6 @@ const emit = defineEmits<{
 /* stores */
 const ui = useMinesUI();
 const settings = useMinesSettings();
-const round = useMinesRound();
 
 /* flags */
 const isCashout = computed(() => props.status.includes("cashout"));
@@ -98,10 +89,11 @@ const gradientStyle = computed(() => {
       };
 });
 
+/* live cash uses the UI store’s nextMultiplier for immediate preview */
 const liveCash = computed(() => {
   if (props.status === "cashoutActive") {
-    const mult = calcMultiplier(settings.minesCount, round.revealedTiles);
-    return (ui.betValue * mult).toFixed(2);
+    // Multiply the current bet by the preview multiplier
+    return (ui.betValue * ui.nextMultiplier).toFixed(2);
   }
   if (props.status === "cashoutInactive") {
     return ui.lastWin.toFixed(2);
