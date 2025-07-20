@@ -28,8 +28,8 @@
           :disabled="betAutoDisabled"
           @toggle="toggleAuto"
         />
-        <!-- now listening for the correct 'bet' event -->
-        <BetButton :status="store.status ?? ''" @bet="onBetClick" />
+        <!-- now always pass betStatus -->
+        <BetButton :status="betStatus" @bet="onBetClick" />
       </div>
     </div>
 
@@ -47,13 +47,10 @@
 import { ref, computed, watch, defineProps, defineEmits, toRefs } from "vue";
 import { gameConfigs } from "@/config/gameConfigs";
 import AutoGameModal from "@/components/shared/AutoGameModal.vue";
-
-/* UI Components */
 import BetAuto from "@/components/shared/BetAuto.vue";
 import BetButton from "@/components/shared/BetButton.vue";
 import BetInput from "@/components/shared/BetInput.vue";
 
-/* Game stores */
 import { useDiceStore } from "@/modules/games/dice/Store";
 import { usePlinkoStore } from "@/modules/games/plinko/Store";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
@@ -75,7 +72,7 @@ const props = defineProps<{
 }>();
 const { classes, theme, panelType, maxBet, showControls } = toRefs(props);
 
-// select appropriate store based on panelType
+// select store based on panelType
 const stores: Record<string, any> = {
   dice: useDiceStore(),
   plinko: usePlinkoStore(),
@@ -111,6 +108,11 @@ const autoRunning = computed(() => store.auto?.running ?? false);
 const roundLocked = computed(() => store.status !== "betActive");
 const betAutoDisabled = computed(
   () => roundLocked.value || !autoEnabled.value || !preselectReady.value
+);
+
+// ▶️ NEW: override status when autoProcess is true
+const betStatus = computed(() =>
+  autoProcess.value ? "betInactive" : status.value
 );
 
 // emit events to parent
