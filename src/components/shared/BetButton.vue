@@ -50,15 +50,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, PropType } from "vue";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
 import { useMinesSettings } from "@/modules/games/mines/store/settings";
 import { useMinesRound } from "@/modules/games/mines/store/round";
 import { calcMultiplier } from "@/modules/games/mines/math";
 import iconBet from "@/assets/icon-bet.svg";
 
-const props = defineProps<{ status: string }>();
-const emit = defineEmits<{ (e: "bet"): void }>();
+// define status with a safe default
+const props = defineProps({
+  status: {
+    type: String as PropType<string>,
+    required: false,
+    default: "",
+  },
+});
+
+const emit = defineEmits<{
+  (e: "bet"): void;
+}>();
 
 /* stores */
 const ui = useMinesUI();
