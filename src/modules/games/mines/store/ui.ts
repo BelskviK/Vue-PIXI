@@ -1,3 +1,4 @@
+// src/modules/games/mines/store/ui.ts
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/user";
 import {
@@ -18,6 +19,18 @@ export interface AutoState {
   currentRound: number;
   stopLoss: number | null;
   takeProfit: number | null;
+  profitLimit: number | null;
+  initialBet: number;
+  onLoss: {
+    type: "initial" | "increase" | "decrease";
+    increase: number;
+    decrease: number;
+  };
+  onWin: {
+    type: "initial" | "increase" | "decrease";
+    increase: number;
+    decrease: number;
+  };
   stopRequested: boolean;
   startBalance: number;
 }
@@ -26,11 +39,17 @@ export const useMinesUI = defineStore("mines", {
   state: () => ({
     status: "betActive" as ButtonStatus,
     betValue: 0.1,
+
+    /* RANDOM */
     randomEnabled: false,
     randomTrigger: 0,
+
+    /* CASH-OUT */
     cashoutTrigger: 0,
     lastWin: 0,
     undoPreselectTrigger: 0,
+
+    /* AUTO */
     auto: <AutoState>{
       process: false,
       enabled: false,
@@ -39,9 +58,14 @@ export const useMinesUI = defineStore("mines", {
       currentRound: 0,
       stopLoss: null,
       takeProfit: null,
+      profitLimit: null,
+      initialBet: 0,
+      onLoss: { type: "initial", increase: 0, decrease: 0 },
+      onWin: { type: "initial", increase: 0, decrease: 0 },
       stopRequested: false,
       startBalance: 0,
     },
+
     frozenNextMultiplier: null as number | null,
   }),
 
@@ -74,12 +98,9 @@ export const useMinesUI = defineStore("mines", {
           : round.revealedTiles;
       const maxSafe = TOTAL_TILES - bombs;
       const kNext = safeRevealed + 1;
-      if (kNext <= maxSafe) {
-        return calcMultiplier(bombs, kNext);
-      } else {
-        const current = calcMultiplier(bombs, safeRevealed);
-        return roundUp500(current);
-      }
+      return kNext <= maxSafe
+        ? calcMultiplier(bombs, kNext)
+        : roundUp500(calcMultiplier(bombs, safeRevealed));
     },
     betButtonOpacity(): number {
       return this.auto.process || this.auto.enabled ? 1 : 0.5;
@@ -91,15 +112,39 @@ export const useMinesUI = defineStore("mines", {
       rounds: number;
       stopLoss?: number | null;
       takeProfit?: number | null;
+      profitLimit?: number | null;
+      onLoss?: {
+        type: "initial" | "increase" | "decrease";
+        increase: number;
+        decrease: number;
+      };
+      onWin?: {
+        type: "initial" | "increase" | "decrease";
+        increase: number;
+        decrease: number;
+      };
     }) {
       const wallet = useUserStore();
       this.auto.startBalance = wallet.balance;
+      this.auto.process = false; // ← reset any old “in progress” flag
+
       this.auto.enabled = true;
       this.auto.running = false;
       this.auto.currentRound = 0;
       this.auto.roundsPlanned = cfg.rounds;
       this.auto.stopLoss = cfg.stopLoss ?? null;
       this.auto.takeProfit = cfg.takeProfit ?? null;
+      this.auto.profitLimit = cfg.profitLimit ?? null;
+      this.auto.onLoss = cfg.onLoss ?? {
+        type: "initial",
+        increase: 0,
+        decrease: 0,
+      };
+      this.auto.onWin = cfg.onWin ?? {
+        type: "initial",
+        increase: 0,
+        decrease: 0,
+      };
       this.auto.stopRequested = false;
     },
 
@@ -116,29 +161,30 @@ export const useMinesUI = defineStore("mines", {
 
     handleClick() {
       const wallet = useUserStore();
-
-      // ── place bet ──
       if (this.status === "betActive") {
         if (wallet.balance < this.betValue) return;
         wallet.updateBalance(
           parseFloat((wallet.balance - this.betValue).toFixed(2))
         );
         this.status = "cashoutInactive";
-        this.lastWin = 0; // clear any old win
+        this.lastWin = 0;
 
         if (this.auto.enabled) {
+          // ONLY the first time process flips true:
+          if (!this.auto.process) {
+            this.auto.initialBet = this.betValue;
+            this.auto.process = true;
+          }
+
           this.auto.running = true;
-          this.auto.process = true;
           this.frozenNextMultiplier = this.nextMultiplier;
         }
+
         return;
       }
-
-      // ── cash-out ──
       if (this.status === "cashoutActive") {
         const payout = this.betValue * this.nextMultiplier;
         wallet.updateBalance(parseFloat(payout.toFixed(2)));
-        // NET profit:
         this.lastWin = parseFloat((payout - this.betValue).toFixed(2));
         this.status = "cashoutInactive";
         this.randomEnabled = false;
@@ -176,21 +222,42 @@ export const useMinesUI = defineStore("mines", {
         this.auto.currentRound++;
         this.auto.running = false;
 
-        // ── Stop-Loss check ──
-        if (this.auto.stopLoss !== null) {
-          const wallet = useUserStore();
-          const loss = this.auto.startBalance - wallet.balance;
-          if (loss >= this.auto.stopLoss) {
-            this.auto.stopRequested = true;
-          }
+        // adjust bet sizing based on last outcome
+        const rule = this.lastWin > 0 ? this.auto.onWin : this.auto.onLoss;
+        switch (rule.type) {
+          case "initial":
+            this.betValue = this.auto.initialBet;
+            break;
+          case "increase":
+            this.betValue = parseFloat(
+              (this.betValue * (1 + rule.increase / 100)).toFixed(2)
+            );
+            break;
+          case "decrease":
+            this.betValue = parseFloat(
+              (this.betValue * (1 - rule.decrease / 100)).toFixed(2)
+            );
+            break;
         }
 
-        // ── Take-Profit check (NET profit only) ──
+        // stop-loss
+        if (this.auto.stopLoss !== null) {
+          const loss = this.auto.startBalance - useUserStore().balance;
+          if (loss >= this.auto.stopLoss) this.auto.stopRequested = true;
+        }
+
+        // take-profit
         if (
           this.auto.takeProfit !== null &&
           this.lastWin >= this.auto.takeProfit
         ) {
           this.auto.stopRequested = true;
+        }
+
+        // profit-limit
+        if (this.auto.profitLimit !== null) {
+          const profit = useUserStore().balance - this.auto.startBalance;
+          if (profit >= this.auto.profitLimit) this.auto.stopRequested = true;
         }
       }
 
@@ -201,7 +268,6 @@ export const useMinesUI = defineStore("mines", {
         this.stopAutoGame();
       }
 
-      // clear lastWin for next round
       this.lastWin = 0;
     },
 
@@ -212,18 +278,13 @@ export const useMinesUI = defineStore("mines", {
         this.status !== "betActive"
       )
         return;
-
-      // stop-loss
       if (this.auto.stopLoss !== null) {
-        const wallet = useUserStore();
-        const loss = this.auto.startBalance - wallet.balance;
+        const loss = this.auto.startBalance - useUserStore().balance;
         if (loss >= this.auto.stopLoss) {
           this.auto.stopRequested = true;
           return;
         }
       }
-
-      // take-profit (NET profit only)
       if (
         this.auto.takeProfit !== null &&
         this.lastWin >= this.auto.takeProfit
@@ -231,7 +292,13 @@ export const useMinesUI = defineStore("mines", {
         this.auto.stopRequested = true;
         return;
       }
-
+      if (this.auto.profitLimit !== null) {
+        const profit = useUserStore().balance - this.auto.startBalance;
+        if (profit >= this.auto.profitLimit) {
+          this.auto.stopRequested = true;
+          return;
+        }
+      }
       setTimeout(() => this.handleClick(), 150);
     },
 

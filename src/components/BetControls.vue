@@ -1,4 +1,4 @@
-<!-- src/components/shared/BetControls.vue -->
+<!-- src/components/BetControls.vue -->
 <template>
   <div
     v-if="showControls !== false"
@@ -46,10 +46,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, defineProps, defineEmits, toRefs } from "vue";
 import { gameConfigs } from "@/config/gameConfigs";
-import AutoGameModal from "@/components/shared/AutoGameModal.vue";
-import BetAuto from "@/components/shared/BetAuto.vue";
-import BetButton from "@/components/shared/BetButton.vue";
-import BetInput from "@/components/shared/BetInput.vue";
+import AutoGameModal from "@/components/AutoGameModal.vue";
+import BetAuto from "@/components/BetAuto.vue";
+import BetButton from "@/components/BetButton.vue";
+import BetInput from "@/components/BetInput.vue";
 
 import { useDiceStore } from "@/modules/games/dice/Store";
 import { usePlinkoStore } from "@/modules/games/plinko/Store";

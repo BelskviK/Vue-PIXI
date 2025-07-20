@@ -1,7 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
-export type ConditionType = "rounds" | "stopLoss" | "takeProfit";
+export type ConditionType =
+  | "rounds"
+  | "stopLoss"
+  | "takeProfit"
+  | "profitLimit"
+  | "onLoss"
+  | "onWin";
 
 export interface AutoModalConfig {
   /** List of controls that should appear in the modal */
@@ -83,7 +89,14 @@ export const gameConfigs: Record<string, GameConfig> = {
     },
     autoModal: {
       buttonLabel: "Auto Game",
-      conditions: ["rounds", "stopLoss", "takeProfit"],
+      conditions: [
+        "rounds",
+        "stopLoss",
+        "takeProfit",
+        "profitLimit",
+        "onLoss",
+        "onWin",
+      ],
     },
   },
 

@@ -46,8 +46,8 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
 import { computed, defineAsyncComponent } from "vue";
-import Header from "@/components/shared/Header.vue";
-import BetsControl from "@/components/shared/BetControls.vue";
+import Header from "@/components/Header.vue";
+import BetsControl from "@/components/BetControls.vue";
 import { gameConfigs } from "@/config/gameConfigs";
 
 const route = useRoute();

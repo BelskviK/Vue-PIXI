@@ -1,4 +1,4 @@
-<!-- src/components/shared/BetButton.vue -->
+<!-- src/components/BetButton.vue -->
 <template>
   <button
     :disabled="isDisabled"
