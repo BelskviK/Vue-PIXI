@@ -29,7 +29,7 @@
           : 'opacity-40 cursor-not-allowed'
       "
     >
-      <!-- icon stays in the label, but we fully cancel default toggle -->
+      <!-- icon -->
       <img
         :src="iconAuto"
         alt="Auto"
@@ -42,7 +42,7 @@
         @click.stop.prevent="handleUndoPreselect"
       />
 
-      <!-- hidden checkbox drives peer styles -->
+      <!-- hidden checkbox -->
       <input
         id="auto-toggle"
         type="checkbox"

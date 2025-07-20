@@ -1,4 +1,3 @@
-// src/components/games/mines/Store.ts
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/user";
 import { useMinesSettings } from "@/modules/games/mines/store/settings";
@@ -17,7 +16,7 @@ export interface AutoState {
 }
 
 export const useMinesUI = defineStore("mines", {
-  /* ─────────────── STATE ─────────────── */
+  /* ───────── STATE ───────── */
   state: () => ({
     status: "betActive" as ButtonStatus,
     betValue: 0.1,
@@ -30,10 +29,10 @@ export const useMinesUI = defineStore("mines", {
     cashoutTrigger: 0,
     lastWin: 0,
 
-    /* single-tile undo trigger (Auto) */
+    /* one-step undo (Auto) */
     undoPreselectTrigger: 0,
 
-    /* AUTO-PLAY */
+    /* AUTO */
     auto: <AutoState>{
       enabled: false,
       running: false,
@@ -44,19 +43,22 @@ export const useMinesUI = defineStore("mines", {
     },
   }),
 
-  /* ─────────────── GETTERS ─────────────── */
+  /* ───────── GETTERS ───────── */
   getters: {
     boardActive: (s) => s.status !== "betActive",
     autoActive: (s) => s.auto.running,
     dropdownLocked: (s) => s.status !== "betActive" || s.auto.enabled,
+
+    /* 🟢 FIX: RANDOM stays enabled whenever Auto is armed */
     randomButtonEnabled: (s) => s.randomEnabled || s.auto.enabled,
+
     betButtonStatus: (s): ButtonStatus | "betInactive" =>
       s.auto.enabled ? "betInactive" : s.status,
   },
 
-  /* ─────────────── ACTIONS ─────────────── */
+  /* ───────── ACTIONS ───────── */
   actions: {
-    /* ---------- called by Auto-Play modal ---------- */
+    /* ========== called by Auto-Play modal ========== */
     setAutoConditions(cfg: {
       rounds: number;
       stopLoss?: number | null;
@@ -70,13 +72,13 @@ export const useMinesUI = defineStore("mines", {
       this.auto.takeProfit = cfg.takeProfit ?? null;
     },
 
-    /* ---------- main BET / CASH-OUT button ---------- */
+    /* ========== MAIN BET / CASH-OUT BUTTON ========== */
     handleClick() {
       const wallet = useUserStore();
       const settings = useMinesSettings();
       const round = useMinesRound();
 
-      /* place bet */
+      /* ---- place bet ---- */
       if (this.status === "betActive") {
         if (wallet.balance < this.betValue) return;
 
@@ -91,7 +93,7 @@ export const useMinesUI = defineStore("mines", {
         return;
       }
 
-      /* cash-out */
+      /* ---- cash-out ---- */
       if (this.status === "cashoutActive") {
         const mult = calcMultiplier(settings.minesCount, round.revealedTiles);
         const win = parseFloat((this.betValue * mult).toFixed(2));
@@ -105,12 +107,10 @@ export const useMinesUI = defineStore("mines", {
       }
     },
 
-    /* ---------- board-delegated helpers ---------- */
-    /** turns grey → yellow once first safe tile is revealed */
+    /* ========== helpers called from Board ========== */
     activateCashout() {
       if (this.status === "cashoutInactive") this.status = "cashoutActive";
     },
-    /** force back to grey (round ended by bomb or cash-out) */
     forceCashoutInactive() {
       if (this.status !== "betActive") this.status = "cashoutInactive";
       this.randomEnabled = false;
@@ -128,7 +128,7 @@ export const useMinesUI = defineStore("mines", {
       }
     },
 
-    /* ---------- round reset ---------- */
+    /* ========== round reset ========== */
     startNewRound() {
       this.status = "betActive";
       this.randomEnabled = false;
@@ -137,6 +137,7 @@ export const useMinesUI = defineStore("mines", {
       this.undoPreselectTrigger = 0;
       this.lastWin = 0;
 
+      /* ---- auto bookkeeping ---- */
       if (this.auto.enabled) {
         this.auto.currentRound++;
         this.auto.running = false;
@@ -146,7 +147,19 @@ export const useMinesUI = defineStore("mines", {
       }
     },
 
-    /* stake helpers */
+    /* called by Board after it draws a fresh grid */
+    maybeAutoBet() {
+      if (
+        this.auto.enabled &&
+        !this.auto.running &&
+        this.status === "betActive"
+      ) {
+        // brief pause so the player sees the new grid appear
+        setTimeout(() => this.handleClick(), 150);
+      }
+    },
+
+    /* ========== stake helpers ========== */
     increaseBet() {
       this.betValue = parseFloat((this.betValue + 0.1).toFixed(2));
     },
