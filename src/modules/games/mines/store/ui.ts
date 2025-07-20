@@ -7,6 +7,7 @@ import { useMinesRound } from "@/modules/games/mines/store/round";
 export type ButtonStatus = "betActive" | "cashoutInactive" | "cashoutActive";
 
 export interface AutoState {
+  process: boolean;
   enabled: boolean;
   running: boolean;
   roundsPlanned: number;
@@ -34,6 +35,7 @@ export const useMinesUI = defineStore("mines", {
 
     /* AUTO */
     auto: <AutoState>{
+      process: false,
       enabled: false,
       running: false,
       roundsPlanned: 3,
@@ -45,10 +47,23 @@ export const useMinesUI = defineStore("mines", {
 
   /* ───────── GETTERS ───────── */
   getters: {
+    /** true for the entire duration of an Auto-Play session */
+    autoGameInProgress: (s) => s.auto.process,
     boardActive: (s) => s.status !== "betActive",
     autoActive: (s) => s.auto.running,
     dropdownLocked: (s) => s.status !== "betActive" || s.auto.enabled,
-    randomButtonEnabled: (s) => s.randomEnabled || s.auto.enabled,
+
+    /** RANDOM in manual (after a bet) or pre-select when Auto is armed */
+    randomButtonEnabled: (s) =>
+      // never during an active auto‐session
+      !s.auto.process &&
+      // 1) Auto‐mode preselect: still before spinning
+      ((s.auto.enabled && s.status === "betActive" && !s.auto.running) ||
+        // 2) Manual‐mode random: after bet placed (cashout waiting) and armed
+        (!s.auto.enabled &&
+          (s.status === "cashoutInactive" || s.status === "cashoutActive") &&
+          s.randomEnabled)),
+    /** during Auto the BET button is replaced entirely */
     betButtonStatus: (s): ButtonStatus | "betInactive" =>
       s.auto.enabled ? "betInactive" : s.status,
   },
@@ -82,7 +97,10 @@ export const useMinesUI = defineStore("mines", {
         );
 
         this.status = "cashoutInactive";
-        this.randomEnabled = true;
+        // only enable RANDOM for *manual* bets
+        if (!this.auto.enabled) {
+          this.randomEnabled = true;
+        }
         this.lastWin = 0;
         if (this.auto.enabled) this.auto.running = true;
         return;
@@ -109,7 +127,8 @@ export const useMinesUI = defineStore("mines", {
 
     /* RANDOM button */
     pickRandomTile() {
-      if (this.randomButtonEnabled) this.randomTrigger++;
+      // always fire the trigger; template   getter will gate when allowed
+      this.randomTrigger++;
     },
 
     /* Auto icon: undo one pre-selected tile */
@@ -133,6 +152,7 @@ export const useMinesUI = defineStore("mines", {
         this.auto.currentRound++;
         this.auto.running = false;
         if (this.auto.currentRound >= this.auto.roundsPlanned) {
+          /* finished – turn Auto OFF */
           this.auto.enabled = false;
         }
       }

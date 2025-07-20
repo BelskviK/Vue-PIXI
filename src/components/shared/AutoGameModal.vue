@@ -141,6 +141,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
+
 import type { ConditionType } from "@/config/gameConfigs";
 
 const props = defineProps<{
@@ -225,6 +226,7 @@ function decrement(row: Row) {
 
 /* ---------- submit ---------- */
 function submit() {
+  store.auto.process = true;
   /* store the settings */
   store.setAutoConditions({
     rounds: rounds.value,

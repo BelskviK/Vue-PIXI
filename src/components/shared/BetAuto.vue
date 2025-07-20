@@ -3,7 +3,7 @@
   <button
     @click="handleClick"
     class="w-full max-w-[50px] h-[50px] mr-3 rounded-full"
-    :disabled="disabled"
+    :disabled="disabled || store.autoGameInProgress"
     :class="buttonClasses"
   >
     <!-- countdown while running -->
@@ -23,7 +23,10 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { useMinesUI } from "@/modules/games/mines/store/ui";
+
 import iconAutoPlay from "@/assets/icon-auto-play.svg";
+const store = useMinesUI();
 
 const props = withDefaults(
   defineProps<{

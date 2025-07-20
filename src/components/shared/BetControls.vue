@@ -8,6 +8,7 @@ import AutoGameModal from "@/components/shared/AutoGameModal.vue";
 import { useDiceStore } from "@/modules/games/dice/Store";
 import { usePlinkoStore } from "@/modules/games/plinko/Store";
 import { useMinesUI } from "@/modules/games/mines/store/ui";
+import { useMinesRound } from "@/modules/games/mines/store/round";
 import { useGoalStore } from "@/modules/games/goal/Store";
 import { useHiloStore } from "@/modules/games/hilo/Store";
 import { useKenoStore } from "@/modules/games/keno/Store";
@@ -43,6 +44,12 @@ const gameStores: Record<string, any> = {
 };
 const store = gameStores[props.panelType];
 
+/* mines-specific helpers --------------------------------------------- */
+const minesRound = props.panelType === "mines" ? useMinesRound() : null;
+const preselectReady = computed(() =>
+  props.panelType !== "mines" ? true : minesRound!.preselectedTiles > 0
+);
+
 /* modal spec ---------------------------------------------------------- */
 const autoCfg = computed(() => gameConfigs[props.panelType]?.autoModal);
 
@@ -54,7 +61,11 @@ const status = computed(() => store.betButtonStatus as string);
 const autoEnabled = computed(() => store.auto?.enabled ?? false);
 const autoRunning = computed(() => store.auto?.running ?? false);
 const roundLocked = computed(() => store.status !== "betActive"); // 🔒
-const betAutoDisabled = computed(() => roundLocked.value || !autoEnabled.value);
+
+/* --- NEW: lock BetAuto until at least one tile is pre-selected ----- */
+const betAutoDisabled = computed(
+  () => roundLocked.value || !autoEnabled.value || !preselectReady.value
+);
 
 /* emit bridge --------------------------------------------------------- */
 const emit = defineEmits<{
@@ -80,7 +91,7 @@ function onBetClick() {
 const modalOpen = ref(false);
 
 function toggleAuto() {
-  if (betAutoDisabled.value) return; // locked or not-armed → ignore
+  if (betAutoDisabled.value) return; // guard
   if (!autoRunning.value && autoCfg.value) {
     modalOpen.value = true; // open settings modal
   }
@@ -107,7 +118,7 @@ function handleAutoSubmit(payload?: any) {
       <!-- stake -->
       <BetInput
         :value="betValue"
-        :disabled="roundLocked"
+        :disabled="roundLocked || !autoEnabled.value"
         @increase="inc"
         @decrease="dec"
         :classes="theme.btn"

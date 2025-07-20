@@ -109,11 +109,17 @@ function scheduleAutoCashout() {
 /* ---------- lifecycle of a round ---------- */
 function makeNewGame() {
   clearAllTimers();
+
+  /* first chance: manual mode → wipe greens immediately */
   if (!ui.auto.enabled) clearPreselection();
 
   engine = new MinesEngine(props.rows, props.cols, settings.minesCount);
   round.startRound(props.rows, props.cols);
   ui.startNewRound();
+
+  /* second chance: just after Auto turns itself OFF */
+  if (!ui.auto.enabled) clearPreselection();
+
   firstSafe = false;
   drawBoard();
 
@@ -243,12 +249,21 @@ function revealAllTiles() {
   });
 }
 
+/* ---------- round finish ---------- */
+function hasMoreAutoRounds(): boolean {
+  /* true when Auto is ON and at least one more round is queued */
+  return ui.auto.enabled && ui.auto.currentRound < ui.auto.roundsPlanned;
+}
+
 function finishByExplosion() {
   clearAllTimers();
   revealAllTiles();
   round.revealAll();
   ui.forceCashoutInactive();
-  explodeTimer = setTimeout(animateReset, 2_000);
+
+  explodeTimer = setTimeout(() => {
+    hasMoreAutoRounds() ? animateReset() : makeNewGame();
+  }, 2_000);
 }
 
 function finishByCashout() {
@@ -272,7 +287,7 @@ function finishByCashout() {
   revealAllTiles();
   settleTimer = setTimeout(() => {
     wallet.updateBalance(parseFloat((wallet.balance + win).toFixed(2)));
-    animateReset();
+    hasMoreAutoRounds() ? animateReset() : makeNewGame();
   }, 2_000);
 }
 

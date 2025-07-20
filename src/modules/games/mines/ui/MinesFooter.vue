@@ -1,18 +1,32 @@
-<!-- src/components/games/mines/MinesFooter.vue -->
 <template>
-  <div class="flex flex-row w-full items-center justify-center space-x-4">
+  <div
+    :class="[
+      'flex flex-row w-full items-center justify-center space-x-4',
+      store.auto.process ? 'pointer-events-none' : '',
+    ]"
+  >
     <!-- RANDOM -------------------------------------------------------- -->
     <button
-      @click="store.pickRandomTile()"
-      :disabled="!randomClickable"
+      @click="onRandomClick"
+      :disabled="
+        store.auto.process ||
+        !(
+          store.randomButtonEnabled ||
+          (store.status === 'cashoutInactive' && store.randomEnabled)
+        )
+      "
       :class="[
         'w-full p-0 text-white border border-[rgba(0,0,0,0.5)] rounded-[20px] shadow-[inset_1px_1px_#fff1cd33]',
         'bg-[#00000026] hover:shadow-inner active:shadow-inner',
         'active:translate-y-[2px] disabled:active:translate-y-0',
         'transition-opacity duration-200',
-        randomClickable
-          ? 'opacity-100 cursor-pointer'
-          : 'opacity-40 cursor-not-allowed',
+        store.auto.process ||
+        !(
+          store.randomButtonEnabled ||
+          (store.status === 'cashoutInactive' && store.randomEnabled)
+        )
+          ? 'opacity-40 cursor-not-allowed'
+          : 'opacity-100 cursor-pointer',
       ]"
     >
       <span class="flex-1 text-center font-normal truncate text-[14px]">
@@ -48,7 +62,11 @@
         type="checkbox"
         class="sr-only peer"
         v-model="store.auto.enabled"
-        :disabled="store.status !== 'betActive'"
+        :disabled="
+          store.auto.process ||
+          store.status !== 'betActive' ||
+          store.autoGameInProgress
+        "
       />
 
       <!-- track -->
@@ -69,10 +87,19 @@ import { useMinesUI } from "@/modules/games/mines/store/ui";
 const store = useMinesUI();
 
 /* UI helpers */
-const randomClickable = computed(() => store.randomButtonEnabled);
 const preselectMode = computed(
   () => store.auto.enabled && store.status === "betActive"
 );
+
+/* combined Random behavior */
+function onRandomClick() {
+  // manual mode: place a bet first if not auto
+  if (!store.auto.enabled && store.status === "betActive") {
+    store.handleClick();
+  }
+  // always trigger random pick/preselect
+  store.pickRandomTile();
+}
 
 /* one-step undo, but only when allowed */
 function handleUndoPreselect() {
