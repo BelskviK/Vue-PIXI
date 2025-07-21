@@ -81,7 +81,6 @@
       </button>
     </div>
 
-    <!-- dropdown menu -->
     <!-- Game dropdown menu -->
     <div
       v-if="dropdownOpen"
@@ -93,8 +92,27 @@
         class="flex flex-col items-center justify-end hover:opacity-80 cursor-pointer mb-2 w-[70px]"
         @click="onSelectGame(game)"
       >
-        <img :src="game.src" :alt="game.name" class="w-108 h-108 mb-1" />
-        <p class="text-[10px] opacity-70 font-extralight truncate">
+        <SvgIcon
+          :src="game.src"
+          :is-selected="selectedGame.routeName === game.routeName"
+          class="w-9 h-9 mb-1"
+        />
+        <p
+          class="text-[10px] font-[12px] truncate mt-1 transition-all duration-200"
+          :class="{
+            'font-bold text-[12px]': selectedGame.routeName === game.routeName,
+            'text-gray-400 opacity-80':
+              selectedGame.routeName !== game.routeName,
+          }"
+          :style="
+            selectedGame.routeName === game.routeName
+              ? {
+                  color: theme.btn,
+                  filter: 'brightness(3) ',
+                }
+              : {}
+          "
+        >
           {{ game.name }}
         </p>
       </div>
@@ -147,9 +165,14 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
+import SvgIcon from "@/components/SvgIcon.vue";
 
 import iconBalloon from "@/assets/gameIcons/icon-balloon.svg";
 import iconDice from "@/assets/gameIcons/icon-dice.svg";
@@ -217,7 +240,10 @@ function handleClickOutside(event: MouseEvent) {
     dropdownOpen.value = false;
   }
 }
-onMounted(() => document.addEventListener("click", handleClickOutside));
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+  initializeSelectedGame();
+});
 onBeforeUnmount(() =>
   document.removeEventListener("click", handleClickOutside)
 );
@@ -246,6 +272,35 @@ const liveCash = computed(() => {
   return ui.lastWin.toFixed(2);
 });
 const soundEnabled = ref(localStorage.getItem("soundEnabled") !== "false");
+const initializeSelectedGame = () => {
+  const gameId = route.params.id?.toString();
+  console.log("Current game ID:", gameId); // Debug log
+
+  if (!gameId) {
+    selectedGame.value = {
+      name: "Mines",
+      src: iconMines,
+      routeName: "Mines",
+    };
+    return;
+  }
+
+  const currentGame = gameIcons.find(
+    (game) => game.routeName.toLowerCase() === gameId.toLowerCase()
+  );
+
+  if (currentGame) {
+    selectedGame.value = currentGame;
+  } else {
+    // Fallback to Mines if no match found
+    selectedGame.value = {
+      name: "Mines",
+      src: iconMines,
+      routeName: "Mines",
+    };
+  }
+};
+
 watch(soundEnabled, (val) => {
   localStorage.setItem("soundEnabled", String(val));
 });
@@ -267,6 +322,15 @@ watch(
     if (finished && ui.lastWin > 0) {
       showLiveCash.value = true;
       setTimeout(() => (showLiveCash.value = false), 2000);
+    }
+  }
+);
+// Watch for both route name and params changes
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) {
+      initializeSelectedGame();
     }
   }
 );
