@@ -64,6 +64,7 @@
         type="checkbox"
         class="sr-only peer"
         v-model="store.auto.enabled"
+        v-sound="'chip'"
         :disabled="
           store.auto.process ||
           store.status !== 'betActive' ||

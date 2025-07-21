@@ -16,6 +16,7 @@ import {
   TOTAL_TILES,
   roundUp500,
 } from "@/modules/games/mines/math";
+import { SoundManager } from "@/utils/SoundManager";
 
 /* ---------- props ---------- */
 interface Props {
@@ -145,14 +146,26 @@ function drawBoard() {
     for (let c = 0; c < props.cols; c++) {
       const idx = r * props.cols + c;
       const t = new Tile();
+
       t.scale.set(scale);
       t.position.set(
         offX + c * (BASE_W + GAP) * scale,
         offY + r * (BASE_H + GAP) * scale
       );
+
       t.eventMode = "static";
       t.cursor = "pointer";
+
       t.on("pointertap", () => handleTileClick(idx));
+
+      // ✅ ADD HOVER SOUND
+      t.on("pointerover", () => {
+        // ✅ Only allow hover sound when NOT in betActive state
+        if (ui.status !== "betActive") {
+          SoundManager.instance.play("hovermine");
+        }
+      });
+
       tiles.set(idx, t);
       app.stage.addChild(t);
 
@@ -191,6 +204,10 @@ function handleTileClick(idx: number) {
   if (res === "safe") {
     round.revealOne();
     t.setKind(TileType.StarGold);
+    // 🔊 Play soft win sound on manual click
+    if (!ui.auto.running) {
+      SoundManager.instance.play("softWin");
+    }
     clear(idleTimer);
     scheduleAutoCashout();
     if (!firstSafe) {
@@ -199,6 +216,10 @@ function handleTileClick(idx: number) {
     }
   } else {
     t.setKind(TileType.Explosion);
+    // 🔊 Play explodedetect only on manual click
+    if (!ui.auto.running) {
+      SoundManager.instance.play("explodedetect");
+    }
     finishByExplosion();
   }
 }
@@ -212,9 +233,19 @@ function revealPreselectedLogic(): boolean {
     if (r === "explosion") exploded = true;
     else round.revealOne();
   });
+
   if (preselected.size) round.setPreselected(0);
+
+  if (exploded) {
+    // 🔊 Play if mines were selected in auto-mode
+    SoundManager.instance.play("explodedetect");
+  } else if (preselected.size > 0) {
+    SoundManager.instance.play("win");
+  }
+
   return exploded;
 }
+
 function runAutoRound() {
   if (!ui.auto.running) return;
   const exploded = revealPreselectedLogic();
@@ -359,6 +390,7 @@ function randomPreselect() {
   preselected.add(idx);
   tiles.get(idx)!.setKind(TileType.Preselect);
   syncPreselected();
+  SoundManager.instance.play("minesSelect");
 }
 function revealRandomTile() {
   const pool = Array.from(

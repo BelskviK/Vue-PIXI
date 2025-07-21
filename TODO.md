@@ -7,7 +7,7 @@
 - [ ✅ ] **Auto Game:** honour all 3 stop conditions (X rounds, balance ≤ target, balance ≥ target).
 
 - [ ✅ ] **RAndom working on cashout**
-- [ ] ** balance = balance **
+- [ ✅ ] ** balance = balance **
 - [ ] **MaxWIN RED LABEL**
 - [ ] **Header** multiplier last two variant s next/ null
 - [ ] **SOUNDS** adding sounds to ui
