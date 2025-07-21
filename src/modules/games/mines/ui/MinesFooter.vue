@@ -11,22 +11,16 @@
       @click="onRandomClick"
       :disabled="
         store.auto.process ||
-        !(
-          store.randomButtonEnabled ||
-          (store.status === 'cashoutInactive' && store.randomEnabled)
-        )
+        (store.status === 'betActive' && !store.randomButtonEnabled)
       "
       :class="[
         'w-full p-0 text-white border border-[rgba(0,0,0,0.5)] rounded-[20px] shadow-[inset_1px_1px_#fff1cd33]',
         'bg-[#00000026] hover:shadow-inner active:shadow-inner',
         'active:translate-y-[2px] disabled:active:translate-y-0',
-        'transition-opacity duration-200',
+        '  duration-200',
         store.auto.process ||
-        !(
-          store.randomButtonEnabled ||
-          (store.status === 'cashoutInactive' && store.randomEnabled)
-        )
-          ? 'opacity-40 cursor-not-allowed'
+        (store.status === 'betActive' && !store.randomButtonEnabled)
+          ? 'opacity-40  '
           : 'opacity-100 cursor-pointer',
       ]"
     >

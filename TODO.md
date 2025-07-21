@@ -6,18 +6,22 @@
 
 - [ ✅ ] **Auto Game:** honour all 3 stop conditions (X rounds, balance ≤ target, balance ≥ target).
 
-- [ ] **AutoModalConditions** Designe
-- [ ] **AutoModalConditions** adding more 3 conditions
+- [ ] **RAndom working on cashout**
+- [ ] ** balance = balance **
 - [ ] **MaxWIN RED LABEL**
-- [ ] when selected mines = 1 multiplier rounds 24 to 500
+- [ ] **Header** multiplier last two variant s next/ null
 - [ ] **SOUNDS** adding sounds to ui
-- [ ] **Header.vue:** highlight the active game in the switcher (change SVG fill for the selected game).
+
+- [ ] ** SVH Header.vue:** highlight the active game in the switcher (change SVG fill for the selected game).
+
 - [ ] **Header.vue:** replace “How to Play” button with a shared modal system; modal content per game lives in `src/config/gameConfigs.ts`.
 - [ ] **gameConfigs.ts:** add burger‑menu hover + dropdown with public links.
 
 - [ ] **Global:** remove any lingering `defineProps` warnings.
 - [ ✅ ] betinput null
 - [ ✅ ] animation when reveal, unimate click before rvealing
+- [ ✅ ] **AutoModalConditions** Designe
+- [ ✅ ] **AutoModalConditions** adding more 3 conditions
 
 - [ ] Global SVG's for game
 
@@ -25,7 +29,6 @@
 
 - [ ✅ ] nextMultiplier did not worked on last selected two tiles until (fullgrid.q - selectedMines)
 - [ ✅ ] implemented 🔃 to restart preselected grid in auto-game.
-- [ ❌ ] auto-game is ruled with all conditions from modal.
 - [ ❌ ] highlited SVGs in game selector dropdown.
 - [ ❌ ] change favicons dynamicly by switching games.
 

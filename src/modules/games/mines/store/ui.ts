@@ -78,8 +78,7 @@ export const useMinesUI = defineStore("mines", {
       !s.auto.process &&
       ((s.auto.enabled && s.status === "betActive" && !s.auto.running) ||
         (!s.auto.enabled &&
-          (s.status === "cashoutInactive" || s.status === "cashoutActive") &&
-          s.randomEnabled)),
+          (s.status === "cashoutInactive" || s.status === "cashoutActive"))),
     betButtonStatus: (s): ButtonStatus | "betInactive" =>
       s.auto.enabled ? "betInactive" : s.status,
     nextMultiplier(): number {
