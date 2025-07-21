@@ -1,20 +1,20 @@
-# 🧩 Pixi v8 Mines Game (Vue 3 + TypeScript)
+# 🧩 Pixi v8 Mines Game (Vue 3 + TypeScript)
 
-A fully‑responsive **Mines** game built with **Pixi.js v8** for high‑performance canvas rendering and **Vue 3** for reactive UI. The codebase follows solid **object‑oriented design** so sprites, game logic, and UI can evolve independently.
+A fully-responsive **Mines** game built with **Pixi.js v8** (engine version 8.2.1) integrated into **Vue 3** for reactive UI and **TypeScript** typing. This codebase follows solid **object-oriented design** so sprites, game logic, and UI evolve independently.
 
 ---
 
 ## ✨ Features
 
-| Area         | Highlights                                                                                                                                                                                                                         |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Gameplay** | • Adjustable board size & bomb count via dropdown<br>• Smooth tile‑reveal animation and instant “reveal all” on explosion<br>• High‑resolution tile sprites (bombs, stars, explosions)<br>• Pinia store drives bet / cash‑out flow |
-| **Tech**     | • Pixi.js 8 scene graph with custom `Tile`, `MinesBoard`, `MinesGame` classes<br>• Vue 3 `<script setup>` SFCs + TypeScript typing everywhere<br>• Vite 5 dev‑server & hot‑reload<br>• Tailwind CSS 3.4 utility styling            |
-| **UX**       | • Mobile‑first responsive layout (max‑width 970 px)<br>• Accessible keyboard / ARIA on inputs & progress bar<br>• Dark‑theme friendly                                                                                              |
+| Area         | Highlights                                                                                                                                                                                                                                                                                              |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Gameplay** | • Adjustable board size & bomb count via dropdown<br>• Smooth tile-reveal animation and instant “reveal all” on explosion<br>• High-resolution tile sprites (bombs, stars, explosions)<br>• Confetti celebration on win (canvas-confetti)                                                               |
+| **Tech**     | • **Pixi.js v8** scene graph with custom `Tile`, `MinesBoard`, `MinesGame` classes<br>• Vue 3 `<script setup>` SFCs + TypeScript everywhere<br>• Pinia store for state management (bets, rounds)<br>• Vite 5 dev-server & HMR<br>• Tailwind CSS 3.4 utility styling<br>• Heroicons via `@heroicons/vue` |
+| **UX**       | • Mobile-first responsive layout (max-width 970 px)<br>• Accessible keyboard / ARIA on inputs & progress bar<br>• Dark-theme friendly                                                                                                                                                                   |
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start
 
 1. **Clone & install**
 
@@ -39,12 +39,10 @@ A fully‑responsive **Mines** game built with **Pixi.js v8** for high‑perfor
 
 ---
 
-## 🧠 Useful NPM Scripts
+## 🎨 Engine Integration
 
-| Script    | Purpose                             |
-| --------- | ----------------------------------- |
-| `dev`     | Start Vite dev server with HMR      |
-| `build`   | Production build (minified, hashed) |
-| `preview` | Local preview of built files        |
+The core game logic and rendering are handled by **Pixi.js v8**. We instantiate a `PIXI.Application` inside a Vue component, mounting the canvas to a reactive container. Scenes, sprites, filters, and animations use Pixi's scene graph and are wrapped in TypeScript classes for OOP separation.
 
 ---
+
+© BelskviK

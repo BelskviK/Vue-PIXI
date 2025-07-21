@@ -58,6 +58,7 @@
       <p class="opacity-50">USD</p>
 
       <button
+        ref="burgerButtonRef"
         @click="openMenu"
         id="butrger-menu"
         class="p-1 rounded-full w-[24px] h-[24px] transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
@@ -120,6 +121,7 @@
 
     <!-- ✅ Burger dropdown menu -->
     <div
+      ref="menuRef"
       v-if="menuOpen"
       class="absolute right-1 md:top-full top-[-740%] bg-[#1e1f26] text-white rounded-2xl shadow-lg p-4 z-50 h-[250px] w-[300px]"
       style="max-width: 298px; font-size: 13px"
@@ -207,6 +209,8 @@ function openMenu() {
 
 const dropdownRef = ref<HTMLElement | null>(null);
 
+const menuRef = ref<HTMLElement | null>(null);
+const burgerButtonRef = ref<HTMLElement | null>(null);
 const selectedGame = ref<GameType>({
   name: "Mines",
   src: iconMines,
@@ -231,15 +235,30 @@ const { balance } = storeToRefs(userStore);
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value;
 }
-function handleClickOutside(event: MouseEvent) {
+function handleClickOutside(e: MouseEvent) {
+  const target = e.target as Node;
+
+  // close game dropdown
   if (
     dropdownOpen.value &&
     dropdownRef.value &&
-    !dropdownRef.value.contains(event.target as Node)
+    !dropdownRef.value.contains(target)
   ) {
     dropdownOpen.value = false;
   }
+
+  // close burger menu (only if clicked outside both the menu itself and its button)
+  if (
+    menuOpen.value &&
+    menuRef.value &&
+    !menuRef.value.contains(target) &&
+    burgerButtonRef.value &&
+    !burgerButtonRef.value.contains(target)
+  ) {
+    menuOpen.value = false;
+  }
 }
+
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
   initializeSelectedGame();
