@@ -71,7 +71,10 @@ export class SoundManager {
   }
 
   /** Play a sound by key */
+
   public play(key: SoundKey) {
+    if (localStorage.getItem("soundEnabled") === "false") return;
+
     const audio = this.sounds.get(key);
     if (!audio) return;
     audio.currentTime = 0;

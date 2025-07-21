@@ -59,6 +59,7 @@
 
       <button
         @click="openMenu"
+        id="butrger-menu"
         class="p-1 rounded-full w-[24px] h-[24px] transition-transform duration-100 active:translate-y-[2px] shadow-[2px_2px_0_rgba(0,0,0,0.3),inset_2px_2px_0_rgba(255,255,255,0.2)]"
         :style="{ backgroundColor: theme.btn }"
         aria-label="Open menu"
@@ -81,6 +82,7 @@
     </div>
 
     <!-- dropdown menu -->
+    <!-- Game dropdown menu -->
     <div
       v-if="dropdownOpen"
       class="absolute md:top-full top-[-650%] left-1 grid grid-cols-4 gap-1 bg-[#212226] p-4 z-50 rounded-lg"
@@ -94,6 +96,49 @@
         <img :src="game.src" :alt="game.name" class="w-108 h-108 mb-1" />
         <p class="text-[10px] opacity-70 font-extralight truncate">
           {{ game.name }}
+        </p>
+      </div>
+    </div>
+
+    <!-- ✅ Burger dropdown menu -->
+    <div
+      v-if="menuOpen"
+      class="absolute right-1 md:top-full top-[-740%] bg-[#1e1f26] text-white rounded-2xl shadow-lg p-4 z-50 h-[250px] w-[300px]"
+      style="max-width: 298px; font-size: 13px"
+    >
+      <div class="flex justify-between items-center mb-3">
+        <div class="flex items-center space-x-2">
+          <img :src="iconSound" alt="" /><span>Sound</span>
+        </div>
+        <button
+          @click="soundEnabled = !soundEnabled"
+          class="w-10 h-6 rounded-full flex items-center p-1 transition-colors duration-300"
+          :class="soundEnabled ? 'bg-lime-500' : 'bg-gray-600'"
+        >
+          <div
+            class="bg-white w-4 h-4 rounded-full shadow transform transition-transform duration-300"
+            :class="soundEnabled ? 'translate-x-4' : 'translate-x-0'"
+          />
+        </button>
+      </div>
+
+      <div class="text-gray-300 mt-2 space-y-2">
+        <p class="hover:text-white opacity-50 cursor-not-allowed">Free Bets</p>
+        <p class="hover:text-white opacity-50 cursor-not-allowed">
+          Bet History
+        </p>
+        <p class="hover:text-white opacity-50 cursor-not-allowed">
+          Game Limits
+        </p>
+        <p class="hover:text-white opacity-50 cursor-not-allowed">
+          How to Play
+        </p>
+        <p class="hover:text-white opacity-50 cursor-not-allowed">Game Rules</p>
+        <p class="hover:text-white opacity-50 cursor-not-allowed">
+          Provably Fair Settings
+        </p>
+        <p class="hover:text-white opacity-50 cursor-not-allowed">
+          Back to Home
         </p>
       </div>
     </div>
@@ -116,6 +161,7 @@ import iconMines from "@/assets/gameIcons/icon-mines.svg";
 import iconMiniRoulette from "@/assets/gameIcons/icon-mini-roulette.svg";
 import iconPlinko from "@/assets/gameIcons/icon-plinko.svg";
 import howTo from "@/assets/icon-how-to-play.svg";
+import iconSound from "@/assets/icon-sounds.svg";
 
 import { useMinesUI } from "@/modules/games/mines/store/ui";
 import { useMinesRound } from "@/modules/games/mines/store/round";
@@ -131,6 +177,11 @@ const { theme } = props;
 
 const router = useRouter();
 const dropdownOpen = ref(false);
+const menuOpen = ref(false);
+function openMenu() {
+  menuOpen.value = !menuOpen.value;
+}
+
 const dropdownRef = ref<HTMLElement | null>(null);
 
 const selectedGame = ref<GameType>({
@@ -172,7 +223,6 @@ onBeforeUnmount(() =>
 );
 
 function openHowToPlayModal() {}
-function openMenu() {}
 function onSelectGame(game: GameType) {
   selectedGame.value = game;
   dropdownOpen.value = false;
@@ -195,7 +245,10 @@ const liveCash = computed(() => {
   // final win
   return ui.lastWin.toFixed(2);
 });
-
+const soundEnabled = ref(localStorage.getItem("soundEnabled") !== "false");
+watch(soundEnabled, (val) => {
+  localStorage.setItem("soundEnabled", String(val));
+});
 // on manual cash-out
 watch(
   () => ui.cashoutTrigger,
