@@ -15,11 +15,11 @@
 - [ ✅ ] **AutoModalConditions** Designe
 - [ ✅ ] **AutoModalConditions** adding more 3 conditions
 
-- [ ] **DROPDOWN** sound on off
+- [ ✅ ] **DROPDOWN** sound on off
 - [ ] **MaxWIN RED LABEL**
-- [ ] **Header** multiplier last two variant s next/ null
+- [ ] **Header** multiplier last two variants next/ null
 
-- [ ] ** SVH Header.vue:** highlight the active game in the switcher (change SVG fill for the selected game).
+- [ ✅ ] ** SVH Header.vue:** highlight the active game in the switcher (change SVG fill for the selected game).
 
 - [ ] **Header.vue:** replace “How to Play” button with a shared modal system; modal content per game lives in `src/config/gameConfigs.ts`.
 - [ ] **gameConfigs.ts:** add burger‑menu hover + dropdown with public links.
@@ -32,7 +32,7 @@
 
 - [ ✅ ] nextMultiplier did not worked on last selected two tiles until (fullgrid.q - selectedMines)
 - [ ✅ ] implemented 🔃 to restart preselected grid in auto-game.
-- [ ] highlited SVGs in game selector dropdown.
+- [ ✅ ] highlited SVGs in game selector dropdown.
 - [ ] change favicons dynamicly by switching games.
 
   ------------------- IMPROVEMENTS: -------------------
