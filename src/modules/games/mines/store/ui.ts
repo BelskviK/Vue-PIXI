@@ -169,21 +169,22 @@ export const useMinesUI = defineStore("mines", {
         this.lastWin = 0;
 
         if (this.auto.enabled) {
-          // ONLY the first time process flips true:
           if (!this.auto.process) {
             this.auto.initialBet = this.betValue;
             this.auto.process = true;
           }
-
           this.auto.running = true;
           this.frozenNextMultiplier = this.nextMultiplier;
         }
-
         return;
       }
+
       if (this.status === "cashoutActive") {
         const payout = this.betValue * this.nextMultiplier;
-        wallet.updateBalance(parseFloat(payout.toFixed(2)));
+
+        // 🔥 FIX: ADD payout TO EXISTING balance (instead of replacing it)
+        wallet.updateBalance(parseFloat((wallet.balance + payout).toFixed(2)));
+
         this.lastWin = parseFloat((payout - this.betValue).toFixed(2));
         this.status = "cashoutInactive";
         this.randomEnabled = false;
