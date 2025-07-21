@@ -61,6 +61,7 @@ import { useKenoStore } from "@/modules/games/keno/Store";
 import { useMiniRouletteStore } from "@/modules/games/mini-roulette/Store";
 import { useHotlineStore } from "@/modules/games/hotline/Store";
 import { useBalloonStore } from "@/modules/games/balloon/Store";
+import { SoundManager } from "@/utils/SoundManager"; // add at the top
 
 // props passed from parent
 const props = defineProps<{
@@ -131,6 +132,11 @@ function dec() {
   betValue.value = Math.max(0, parseFloat((betValue.value - 0.1).toFixed(2)));
 }
 function onBetClick() {
+  if (betStatus.value === "cashoutActive") {
+    SoundManager.instance.play("win");
+  } else {
+    SoundManager.instance.play("bet");
+  }
   store.handleClick?.();
   emit("place:bet");
 }

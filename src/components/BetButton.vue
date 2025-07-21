@@ -3,7 +3,6 @@
   <button
     :disabled="isDisabled"
     @click="handleClick"
-    v-sound="status === 'betActive' ? 'bet' : null"
     :class="[
       'relative inline-flex items-center justify-center w-full h-[50px] rounded-3xl font-semibold text-lg text-white tracking-wide',
       'transition-transform duration-75 focus:outline-none',
